@@ -7,252 +7,464 @@
   <!-- Google Fonts & Material Symbols -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
   <!-- Firebase v9 (Compat) CDN -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <style>
+    /* ==========================================================================
+       [Classic Material 3 Baseline Palette & High Contrast VS Tokens]
+       ========================================================================== */
     :root {
-      --md-sys-color-primary: #00639b;
-      --md-sys-color-on-primary: #ffffff;
-      --md-sys-color-primary-container: #cee5ff;
-      --md-sys-color-on-primary-container: #001d33;
-      --md-sys-color-surface: #f8f9ff;
-      --md-sys-color-on-surface: #191c20;
-      --md-sys-color-surface-container: #edf0f7;
-      --md-sys-color-outline: #72777f;
-      --md-sys-color-outline-variant: #c2c7cf;
-      --md-sys-color-error: #ba1a1a;
-      --md-sys-shape-corner-small: 8px;
-      --md-sys-shape-corner-medium: 16px;
-      --md-sys-shape-corner-large: 24px;
-      --md-sys-shape-corner-full: 9999px;
+      /* M3 System Theme */
+      --md-sys-color-primary: #6750A4;
+      --md-sys-color-on-primary: #FFFFFF;
+      --md-sys-color-primary-container: #EADDFF;
+      --md-sys-color-on-primary-container: #21005D;
+      --md-sys-color-surface: #FEF7FF;
+      --md-sys-color-surface-container-lowest: #FFFFFF;
+      --md-sys-color-surface-container-low: #F7F2FA;
+      --md-sys-color-surface-container: #F3EDF7;
+      --md-sys-color-surface-container-high: #ECE6F0;
+      --md-sys-color-surface-container-highest: #D9D2DE; /* 트랙 분분을 위한 더 명확한 대비 */
+      --md-sys-color-on-surface: #1D1B20;
+      --md-sys-color-on-surface-variant: #49454F;
+      --md-sys-color-outline: #79747E;
+      --md-sys-color-outline-variant: #CAC4D0;
+      --md-sys-color-error: #B3261E;
+      --md-sys-color-error-container: #F9DEDC;
+
+      /* 확실한 A / B 비교를 위한 고대비 컬러 토큰 */
+      --opt-a-main: #00639B;            /* M3 Navy/Ocean Blue */
+      --opt-a-container: #D0E4FF;
+      --opt-a-on-container: #001D36;
+
+      --opt-b-main: #A83800;            /* M3 Amber/Terracotta Orange */
+      --opt-b-container: #FFDBCF;
+      --opt-b-on-container: #380C00;
+
+      /* M3 Shapes */
+      --md-shape-xs: 4px;
+      --md-shape-s: 8px;
+      --md-shape-m: 12px;
+      --md-shape-l: 16px;
+      --md-shape-xl: 28px;
+      --md-shape-full: 9999px;
+
+      --md-elevation-1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Noto Sans KR', sans-serif;
-      background-color: var(--md-sys-color-surface);
+      font-family: 'Roboto', 'Noto Sans KR', sans-serif;
+      background-color: var(--md-sys-color-surface-container-low);
       color: var(--md-sys-color-on-surface);
       display: flex;
       justify-content: center;
       min-height: 100vh;
-      padding: 16px;
+      padding: 24px 16px;
     }
 
-    /* 학생 화면은 좁고 집중도 있게, 발표자 화면은 넓게 */
-    .container { width: 100%; max-width: 680px; margin: auto; }
-    .container-wide { max-width: 1000px !important; }
+    .container { width: 100%; max-width: 600px; margin: auto; }
+    .container-wide { max-width: 1240px !important; }
 
-    .card {
-      background: #ffffff;
-      border-radius: var(--md-sys-shape-corner-large);
-      padding: 24px 20px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+    /* M3 Classic Card */
+    .m3-card {
+      background: var(--md-sys-color-surface-container-lowest);
+      border-radius: var(--md-shape-xl);
+      padding: 28px;
       border: 1px solid var(--md-sys-color-outline-variant);
-      margin-bottom: 20px;
+      box-shadow: var(--md-elevation-1);
+      position: relative;
     }
 
+    /* M3 Buttons */
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      padding: 12px 24px;
-      border-radius: var(--md-sys-shape-corner-full);
-      font-size: 15px;
+      height: 44px;
+      padding: 0 24px;
+      border-radius: var(--md-shape-full);
+      font-size: 14px;
       font-weight: 500;
+      letter-spacing: 0.1px;
       border: none;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
     }
-    .btn-primary { background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); }
-    .btn-primary:hover { opacity: 0.92; }
-    .btn-primary:disabled { background-color: var(--md-sys-color-outline-variant); cursor: not-allowed; }
-    .btn-text-danger { background: transparent; color: var(--md-sys-color-error); font-size: 13px; padding: 6px 12px; }
+    .btn-filled {
+      background-color: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+    }
+    .btn-filled:hover { box-shadow: var(--md-elevation-1); opacity: 0.95; }
+    .btn-filled:disabled {
+      background-color: rgba(29, 27, 32, 0.12);
+      color: rgba(29, 27, 32, 0.38);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
 
-    .badge {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: var(--md-sys-shape-corner-full);
+    .btn-outlined-danger {
+      background: transparent;
+      border: 1px solid var(--md-sys-color-error);
+      color: var(--md-sys-color-error);
+    }
+    .btn-outlined-danger:hover {
+      background-color: var(--md-sys-color-error-container);
+    }
+
+    /* M3 Chips */
+    .m3-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 32px;
+      padding: 0 14px;
+      border-radius: var(--md-shape-s);
       font-size: 12px;
-      font-weight: 700;
-      background-color: var(--md-sys-color-primary-container);
-      color: var(--md-sys-color-on-primary-container);
-      margin-bottom: 10px;
+      font-weight: 500;
+      background-color: var(--md-sys-color-surface-container-high);
+      color: var(--md-sys-color-on-surface);
+      margin-bottom: 12px;
+      border: 1px solid var(--md-sys-color-outline-variant);
     }
 
-    .progress-bar-container {
+    /* M3 Progress Bar */
+    .m3-linear-progress {
       width: 100%;
       height: 6px;
-      background: var(--md-sys-color-surface-container);
-      border-radius: var(--md-sys-shape-corner-full);
-      margin-bottom: 20px;
+      background: var(--md-sys-color-surface-container-highest);
+      border-radius: var(--md-shape-full);
+      margin-bottom: 24px;
       overflow: hidden;
     }
-    .progress-bar { height: 100%; width: 0%; background: var(--md-sys-color-primary); transition: width 0.3s ease; }
+    .m3-linear-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--md-sys-color-primary);
+      transition: width 0.35s ease-in-out;
+    }
 
-    .option-card {
-      border: 2px solid var(--md-sys-color-outline-variant);
-      border-radius: var(--md-sys-shape-corner-medium);
-      padding: 16px 18px;
+    /* M3 Outlined Text Field */
+    .m3-text-field {
+      position: relative;
+      margin: 16px 0 24px 0;
+    }
+    .m3-text-field input {
+      width: 100%;
+      height: 56px;
+      padding: 16px;
+      border: 1px solid var(--md-sys-color-outline);
+      border-radius: var(--md-shape-xs);
+      background: transparent;
+      font-size: 16px;
+      color: var(--md-sys-color-on-surface);
+      outline: none;
+    }
+    .m3-text-field input:focus {
+      border: 2px solid var(--md-sys-color-primary);
+    }
+
+    /* Choice Options */
+    .m3-option {
+      border: 1px solid var(--md-sys-color-outline-variant);
+      background-color: var(--md-sys-color-surface-container-low);
+      border-radius: var(--md-shape-l);
+      padding: 18px 20px;
       margin-bottom: 12px;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 16px;
       transition: all 0.2s;
     }
-    .option-card:hover { background-color: var(--md-sys-color-surface-container); }
-    .option-card.selected {
+    .m3-option:hover {
+      background-color: var(--md-sys-color-surface-container-high);
+    }
+    .m3-option.selected {
       border-color: var(--md-sys-color-primary);
       background-color: var(--md-sys-color-primary-container);
       color: var(--md-sys-color-on-primary-container);
       font-weight: 500;
     }
 
-    .input-field {
-      width: 100%;
-      padding: 14px 16px;
-      border: 1px solid var(--md-sys-color-outline);
-      border-radius: var(--md-sys-shape-corner-small);
-      font-size: 15px;
-      margin-top: 8px;
-      margin-bottom: 20px;
-      outline: none;
-    }
-
-    /* --- [발표자 대시보드 전용 스타일] --- */
-    .admin-header {
+    /* ==========================================================================
+       [Dashboard Components]
+       ========================================================================== */
+    .dash-topbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
-      background: #fff;
-      padding: 16px 20px;
-      border-radius: var(--md-sys-shape-corner-large);
+      background: var(--md-sys-color-surface-container-lowest);
+      padding: 16px 24px;
+      border-radius: var(--md-shape-xl);
       border: 1px solid var(--md-sys-color-outline-variant);
+      box-shadow: var(--md-elevation-1);
+      margin-bottom: 20px;
     }
-    .dashboard-grid {
+
+    .kpi-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
     }
-    @media (max-width: 600px) {
-      .dashboard-grid { grid-template-columns: 1fr; }
-    }
-    .chart-box {
-      background: var(--md-sys-color-surface-container);
-      border-radius: var(--md-sys-shape-corner-medium);
-      padding: 14px 16px;
-      margin-top: 14px;
-    }
-    .chart-item { margin-bottom: 12px; }
-    .chart-item:last-child { margin-bottom: 0; }
-    .chart-label {
-      display: flex;
-      justify-content: space-between;
-      font-size: 13px;
-      margin-bottom: 6px;
-    }
-    .chart-track {
-      background: #ffffff;
-      height: 18px;
-      border-radius: var(--md-sys-shape-corner-full);
-      overflow: hidden;
+    .kpi-card {
+      background: var(--md-sys-color-surface-container-lowest);
+      padding: 16px 20px;
+      border-radius: var(--md-shape-l);
       border: 1px solid var(--md-sys-color-outline-variant);
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
-    .chart-fill {
-      height: 100%;
-      background: var(--md-sys-color-primary);
-      width: 0%;
-      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    .kpi-icon-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--md-shape-m);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .insight-box {
-      background: #f0f7ff;
-      border-left: 3px solid var(--md-sys-color-primary);
-      border-radius: 4px;
-      padding: 10px 12px;
+
+    .dash-main-split {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 960px) {
+      .dash-main-split { grid-template-columns: 1fr; }
+    }
+
+    /* 통합 매트릭스 리스트 */
+    .unified-row {
+      border-bottom: 1px solid var(--md-sys-color-outline-variant);
+      padding: 16px 14px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .unified-row:last-child { border-bottom: none; }
+    .unified-row:hover { background: var(--md-sys-color-surface-container-low); }
+    .unified-row.active {
+      background: var(--md-sys-color-surface-container);
+      border-left: 5px solid var(--md-sys-color-primary);
+    }
+
+    /* 명확한 대비를 적용한 VS 듀얼 바 트랙 */
+    .vs-bar-track {
+      display: flex;
+      height: 16px;
+      border-radius: var(--md-shape-full);
+      overflow: hidden;
+      margin-top: 10px;
+      background: #C4BDC9; /* 확연히 구분되는 짙은 트랙 배경 */
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.15);
+    }
+    .vs-seg-a {
+      background-color: var(--opt-a-main);
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .vs-seg-b {
+      background-color: var(--opt-b-main);
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* 스포트라이트 상세 카드 */
+    .spotlight-card {
+      background: var(--md-sys-color-surface-container-lowest);
+      border-radius: var(--md-shape-xl);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      box-shadow: var(--md-elevation-1);
+      padding: 24px;
+      position: sticky;
+      top: 20px;
+    }
+
+    .choice-result-box {
+      border-radius: var(--md-shape-l);
+      padding: 16px;
       margin-top: 14px;
-      font-size: 12px;
-      line-height: 1.5;
-      color: #333;
+      border: 1.5px solid transparent;
+    }
+    .choice-result-box.type-a {
+      background: var(--opt-a-container);
+      color: var(--opt-a-on-container);
+      border-color: var(--opt-a-main);
+    }
+    .choice-result-box.type-b {
+      background: var(--opt-b-container);
+      color: var(--opt-b-on-container);
+      border-color: var(--opt-b-main);
+    }
+
+    /* 개별 선택지 내부 게이지 바 */
+    .inner-meter-track {
+      width: 100%;
+      height: 8px;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: var(--md-shape-full);
+      margin-top: 10px;
+      overflow: hidden;
+    }
+    .inner-meter-fill-a {
+      height: 100%;
+      background: var(--opt-a-main);
+      transition: width 0.5s ease;
+    }
+    .inner-meter-fill-b {
+      height: 100%;
+      background: var(--opt-b-main);
+      transition: width 0.5s ease;
     }
   </style>
 </head>
 <body>
 
   <div id="main-container" class="container">
-    <!-- 1. 학생용 뷰 -->
+    <!-- ================= 1. 학생용 참여 화면 ================= -->
     <div id="student-view">
       <!-- 닉네임 입력 화면 -->
-      <div id="step-intro" class="card">
-        <span class="badge">수업 참여 설문</span>
-        <h2 style="font-size: 22px; margin-bottom: 8px;">직업 기초 능력 딜레마 토론</h2>
-        <p style="color: #555; font-size: 14px; line-height: 1.5; margin-bottom: 20px;">
-          실제 직업 현장의 5가지 갈등 상황입니다. 정답은 없습니다. 여러분의 생각을 솔직하게 선택해 주세요!
+      <div id="step-intro" class="m3-card">
+        <span class="m3-chip"><span class="material-symbols-outlined" style="font-size:16px;">school</span> 직업기초능력 토론</span>
+        <h2 style="font-size: 22px; margin-bottom: 8px; color: var(--md-sys-color-on-surface);">갈등 딜레마 모의 투표</h2>
+        <p style="color: var(--md-sys-color-on-surface-variant); font-size: 14px; line-height: 1.5;">
+          실제 직업 현장의 5가지 갈등 상황입니다. 정답은 없습니다. 여러분의 소신껏 솔직하게 선택해 주세요!
         </p>
-        <label style="font-size: 13px; font-weight: 500;">학번 / 닉네임</label>
-        <input type="text" id="user-nickname" class="input-field" placeholder="예: 20415 김철수" autocomplete="off">
-        <button class="btn btn-primary" style="width: 100%;" onclick="startSurvey()">시작하기</button>
+        
+        <div class="m3-text-field">
+          <input type="text" id="user-nickname" placeholder="학번과 이름을 입력하세요 (예: 20101 홍길동)" autocomplete="off">
+        </div>
+        <button class="btn btn-filled" style="width: 100%;" onclick="startSurvey()">
+          설문 참여하기 <span class="material-symbols-outlined">play_arrow</span>
+        </button>
       </div>
 
       <!-- 문제 풀이 화면 -->
-      <div id="step-questions" class="card" style="display: none;">
-        <div class="progress-bar-container">
-          <div id="survey-progress" class="progress-bar"></div>
+      <div id="step-questions" class="m3-card" style="display: none;">
+        <div class="m3-linear-progress">
+          <div id="survey-progress" class="m3-linear-progress-bar"></div>
         </div>
-        <span id="question-badge" class="badge">딜레마 1</span>
-        <h3 id="question-title" style="margin-bottom: 10px; font-size: 18px; line-height: 1.4;"></h3>
-        <p id="question-desc" style="font-size: 14px; color: #555; line-height: 1.5; margin-bottom: 20px;"></p>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <span id="question-badge" class="m3-chip" style="margin-bottom:0;">딜레마 1 / 5</span>
+          <span id="question-competency" style="font-size: 12px; color: var(--md-sys-color-primary); font-weight: 700;"></span>
+        </div>
+
+        <h3 id="question-title" style="margin-bottom: 8px; font-size: 18px; line-height: 1.4;"></h3>
+        <p id="question-desc" style="font-size: 14px; color: var(--md-sys-color-on-surface-variant); line-height: 1.5; margin-bottom: 24px;"></p>
 
         <div id="options-container"></div>
 
-        <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
-          <button id="btn-next" class="btn btn-primary" onclick="submitCurrentAnswerAndNext()" disabled>
-            다음으로 <span class="material-symbols-outlined">arrow_forward</span>
+        <div style="display: flex; justify-content: flex-end; margin-top: 24px;">
+          <button id="btn-next" class="btn btn-filled" onclick="submitCurrentAnswerAndNext()" disabled>
+            다음 <span class="material-symbols-outlined">arrow_forward</span>
           </button>
         </div>
       </div>
 
       <!-- 완료 화면 -->
-      <div id="step-completed" class="card" style="display: none; text-align: center; padding: 40px 20px;">
-        <span class="material-symbols-outlined" style="font-size: 52px; color: #2e7d32; margin-bottom: 14px;">check_circle</span>
-        <h2 style="font-size: 20px; margin-bottom: 8px;">모든 응답이 완료되었습니다!</h2>
-        <p style="color: #666; font-size: 14px; line-height: 1.6;">
-          선택하신 내용이 실시간 집계에 반영되었습니다.<br>
-          이제 앞쪽 스크린을 보고 반 친구들과 함께 결과를 확인해 보세요.
+      <div id="step-completed" class="m3-card" style="display: none; text-align: center; padding: 48px 24px;">
+        <span class="material-symbols-outlined" style="font-size: 56px; color: var(--md-sys-color-primary); margin-bottom: 16px;">check_circle</span>
+        <h2 style="font-size: 22px; margin-bottom: 8px;">응답이 성공적으로 등록되었습니다!</h2>
+        <p style="color: var(--md-sys-color-on-surface-variant); font-size: 14px; line-height: 1.6;">
+          선택하신 결과가 실시간으로 집계되었습니다.<br>선생님의 안내에 따라 대시보드 화면을 보고 의견을 나누어 봅시다.
         </p>
       </div>
     </div>
 
-    <!-- 2. 발표자용 뷰 (?mode=admin) : 전체 문제 한눈에 보기 -->
+    <!-- ================= 2. 발표자용 통합 대시보드 (?mode=admin) ================= -->
     <div id="admin-view" style="display: none;">
-      <div class="admin-header">
-        <div>
-          <span class="badge" style="margin-bottom: 4px;">실시간 집계 대시보드</span>
-          <h2 style="font-size: 20px;">전체 딜레마 투표 현황</h2>
-        </div>
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <div style="font-size: 14px; background: var(--md-sys-color-surface-container); padding: 8px 14px; border-radius: var(--md-sys-shape-corner-full);">
-            실시간 참여자: <strong id="admin-participant-count" style="color: var(--md-sys-color-primary);">0</strong>명
+      <!-- 상단 툴바 -->
+      <div class="dash-topbar">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:40px; height:40px; border-radius:var(--md-shape-full); background:var(--md-sys-color-primary-container); display:flex; align-items:center; justify-content:center; color:var(--md-sys-color-primary);">
+            <span class="material-symbols-outlined">analytics</span>
           </div>
-          <button class="btn btn-text-danger" onclick="resetSurveyData()">데이터 초기화</button>
+          <div>
+            <h2 style="font-size: 18px; line-height:1.2;">실시간 딜레마 종합 분석 대시보드</h2>
+            <span style="font-size: 12px; color: var(--md-sys-color-on-surface-variant);">수업 토론 및 교과 연계 분석 뷰</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-outlined-danger" style="height:36px; padding:0 14px; font-size:13px;" onclick="resetSurveyData()">
+            <span class="material-symbols-outlined" style="font-size:18px;">restart_alt</span> 데이터 리셋
+          </button>
         </div>
       </div>
 
-      <!-- 5개 문제가 한눈에 나열되는 그리드 -->
-      <div id="dashboard-grid" class="dashboard-grid"></div>
+      <!-- 요약 KPI 지표 -->
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-icon-wrap" style="background: var(--md-sys-color-primary-container); color: var(--md-sys-color-primary);">
+            <span class="material-symbols-outlined">group</span>
+          </div>
+          <div>
+            <div style="font-size:12px; color: var(--md-sys-color-on-surface-variant);">총 참여 인원</div>
+            <div id="kpi-count" style="font-size:22px; font-weight:700;">0명</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon-wrap" style="background: var(--md-sys-color-surface-container-high); color: var(--md-sys-color-on-surface);">
+            <span class="material-symbols-outlined">done_all</span>
+          </div>
+          <div>
+            <div style="font-size:12px; color: var(--md-sys-color-on-surface-variant);">완료된 투표 건수</div>
+            <div id="kpi-total-votes" style="font-size:22px; font-weight:700;">0건</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon-wrap" style="background: var(--opt-b-container); color: var(--opt-b-main);">
+            <span class="material-symbols-outlined">balance</span>
+          </div>
+          <div>
+            <div style="font-size:12px; color: var(--md-sys-color-on-surface-variant);">최대 쟁점 문항</div>
+            <div id="kpi-hot-issue" style="font-size:16px; font-weight:700; color:var(--opt-b-main);">-</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2단 메인 레이아웃 -->
+      <div class="dash-main-split">
+        <!-- 좌측: 전 문항 한눈에 비교 매트릭스 -->
+        <div class="m3-card" style="padding: 20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+            <h3 style="font-size: 16px; display:flex; align-items:center; gap:8px;">
+              <span class="material-symbols-outlined" style="font-size:20px; color:var(--md-sys-color-primary);">view_agenda</span>
+              전체 딜레마 A / B 실시간 대결 구도
+            </h3>
+            <!-- 범례 (Legend) -->
+            <div style="display:flex; gap:12px; font-size:12px; font-weight:700;">
+              <span style="color:var(--opt-a-main); display:flex; align-items:center; gap:4px;">
+                <span style="display:inline-block; width:10px; height:10px; border-radius:2px; background:var(--opt-a-main);"></span> 선택지 A
+              </span>
+              <span style="color:var(--opt-b-main); display:flex; align-items:center; gap:4px;">
+                <span style="display:inline-block; width:10px; height:10px; border-radius:2px; background:var(--opt-b-main);"></span> 선택지 B
+              </span>
+            </div>
+          </div>
+          <p style="font-size: 12px; color: var(--md-sys-color-on-surface-variant); margin-bottom: 16px;">
+            행을 클릭하면 우측 스포트라이트에서 세부 문항 내용과 토론 포인트를 확인하실 수 있습니다.
+          </p>
+
+          <div id="matrix-container"></div>
+        </div>
+
+        <!-- 우측: 선택된 문항 스포트라이트 상세 분석 -->
+        <div class="spotlight-card" id="spotlight-box"></div>
+      </div>
     </div>
   </div>
 
   <script>
     /* ==========================================================================
-       [Firebase 설정 및 초기화]
-       ⚠️ 아래 firebaseConfig 객체를 본인 Firebase 콘솔 값으로 붙여넣으세요!
+       [Firebase 설정]
        ========================================================================== */
     const firebaseConfig = {
       apiKey: "AIzaSyBnCJlp6JA4bEl7a8waxnBoJ8rC106URjE",
@@ -268,9 +480,7 @@
     const db = firebase.database();
     const surveysRef = db.ref('career_surveys');
 
-    /* ==========================================================================
-       문항 데이터셋 (5개 문항)
-       ========================================================================== */
+    /* 문항 데이터 */
     const dilemmas = [
       {
         id: 1,
@@ -292,53 +502,52 @@
           "막대한 손해를 감수하더라도 발사를 즉시 중단하고 재검증한다.",
           "시스템 보정 확률을 믿고 예정대로 카운트다운을 진행한다."
         ],
-        insight: "수리 능력의 정확성. 1999년 NASA는 야드/미터 혼동으로 1,300억 원의 탐사선이 폭발하는 참사를 겪었습니다."
+        insight: "수리 능력의 정확성. 1999년 NASA 화성 기후 궤도선은 야드와 미터 단위 혼동으로 인해 1,300억 원 상당의 탐사선이 폭발했습니다."
       },
       {
         id: 3,
         competency: "자기 개발 능력 (경력 개발)",
         title: "사라지는 치즈와 AI 도입 (교과서 57p)",
-        desc: "내 업무 기술이 새로운 생성형 AI로 대체되기 시작했습니다. 현재 맡은 자리는 당장 안정적입니다.",
+        desc: "내 주 업무 기술이 새로운 생성형 AI로 대체되기 시작했습니다. 현재 맡은 직무는 당장 1~2년은 안정적입니다.",
         options: [
           "기존 노하우를 극대화하며 현재 방식의 전문성을 더 판다.",
           "기득권을 내려놓고 불확실하더라도 새로운 AI 툴 학습에 올인한다."
         ],
-        insight: "《누가 내 치즈를 옮겼을까?》처럼 변화에 안주하지 않고 스스로를 지속 발전시키는 자기 개발 능력입니다."
+        insight: "스펜서 존슨의 《누가 내 치즈를 옮겼을까?》처럼 변화를 능동적으로 수용하고 자신의 역할을 끊임없이 재정의하는 역량입니다."
       },
       {
         id: 4,
         competency: "대인 관계 능력 (팀워크/갈등 관리)",
         title: "무임승차 조원 명단 제외 딜레마",
-        desc: "과제 내내 연락을 피하던 조원이 발표 전날 밤 '이름만 넣어주면 밥을 사겠다'며 사정합니다.",
+        desc: "프로젝트 내내 연락을 피하던 조원이 마감 전날 밤 '이름만 올려주면 밥을 사겠다'며 사정합니다.",
         options: [
-          "공정한 기여 원칙에 따라 최종 보고서에서 이름을 제외한다.",
-          "팀 분위기와 인간관계를 고려해 이번에는 이름을 올려준다."
+          "공정한 기여 원칙에 따라 최종 보고서 명단에서 제외한다.",
+          "팀워크의 여지와 인간관계를 고려해 이번만 이름을 올려준다."
         ],
-        insight: "협업은 무조건적인 양보가 아닌, 공정한 역할 분담과 규칙 준수(갈등 조정)를 바탕으로 지속됩니다."
+        insight: "협업은 무조건적인 희생이나 온정이 아닌, 상호 책임감과 원칙(공정한 갈등 조정) 위에서 건강하게 유지됩니다."
       },
       {
         id: 5,
         competency: "자원 관리 능력 (시간/품질)",
         title: "마감 시한 vs 완벽한 완성도",
-        desc: "보고서 제출 30분 전, 완성도를 더 높이고 싶지만 기한을 어기면 신뢰에 치명적입니다.",
+        desc: "기획서 제출 30분 전, 디테일을 더 보완하고 싶지만 기한을 1분이라도 넘기면 신뢰도에 치명타를 입습니다.",
         options: [
-          "약속된 기한 준수가 최우선이므로 현재 상태로 정시에 제출한다.",
-          "품질 부족은 무의미하므로 지연을 감수하고 완성도를 높여 제출한다."
+          "약속된 기한 엄수가 최우선이므로 현재 상태로 정시 제출한다.",
+          "어설픈 품질은 무의미하므로 감점을 감수하고 완성도를 높여 늦게 제출한다."
         ],
-        insight: "한정된 시간과 예산 속에서 우선순위를 정하고 목표를 완수하는 시간/자원 관리 능력입니다."
+        insight: "제한된 시간과 자원 속에서 최적의 결과물을 도출하기 위한 우선순위 의사결정 역량입니다."
       }
     ];
 
-    /* ==========================================================================
-       애플리케이션 상태
-       ========================================================================== */
+    /* 상태 관리 */
     const urlParams = new URLSearchParams(window.location.search);
     const isAdmin = urlParams.get('mode') === 'admin';
 
     let currentStep = 0;
-    let currentUserKey = null; // 학생마다 고유하게 생성되는 세션 키
+    let currentUserKey = null;
     let selectedOptionForCurrentQuestion = null;
     let liveResponses = [];
+    let focusedDilemmaId = 1;
 
     window.addEventListener('DOMContentLoaded', () => {
       if (isAdmin) {
@@ -352,17 +561,16 @@
       }
     });
 
-    /* --- [학생용 로직: 문제 풀 때마다 즉시 실시간 저장] --- */
+    /* ================= 학생용 동작 로직 ================= */
     function startSurvey() {
       const input = document.getElementById('user-nickname');
       const nickname = input.value.trim();
       if (!nickname) {
-        alert("학번이나 닉네임을 입력해 주세요!");
+        alert("학번이나 닉네임을 입력해 주세요.");
         input.focus();
         return;
       }
 
-      // 학생 접속 시 고유 key를 발급받고 기본 정보 즉시 저장
       const newRef = surveysRef.push();
       currentUserKey = newRef.key;
       newRef.set({
@@ -384,6 +592,7 @@
       const progressPercent = (index / dilemmas.length) * 100;
       document.getElementById('survey-progress').style.width = `${progressPercent}%`;
       document.getElementById('question-badge').innerText = `딜레마 ${index + 1} / ${dilemmas.length}`;
+      document.getElementById('question-competency').innerText = `[${d.competency}]`;
       document.getElementById('question-title').innerText = d.title;
       document.getElementById('question-desc').innerText = d.desc;
 
@@ -392,18 +601,21 @@
 
       d.options.forEach((optText, optIdx) => {
         const optCard = document.createElement('div');
-        optCard.className = 'option-card';
+        optCard.className = 'm3-option';
         optCard.innerHTML = `
-          <span class="material-symbols-outlined" style="font-size: 20px; color: var(--md-sys-color-outline);">radio_button_unchecked</span>
-          <span>${optText}</span>
+          <span class="material-symbols-outlined" style="font-size: 22px; color: var(--md-sys-color-outline);">radio_button_unchecked</span>
+          <span style="font-size: 15px; line-height: 1.4;">${optText}</span>
         `;
         optCard.onclick = () => {
-          document.querySelectorAll('.option-card').forEach(c => {
+          document.querySelectorAll('.m3-option').forEach(c => {
             c.classList.remove('selected');
             c.querySelector('.material-symbols-outlined').innerText = 'radio_button_unchecked';
+            c.querySelector('.material-symbols-outlined').style.color = 'var(--md-sys-color-outline)';
           });
           optCard.classList.add('selected');
-          optCard.querySelector('.material-symbols-outlined').innerText = 'radio_button_checked';
+          const icon = optCard.querySelector('.material-symbols-outlined');
+          icon.innerText = 'radio_button_checked';
+          icon.style.color = 'var(--md-sys-color-primary)';
           selectedOptionForCurrentQuestion = optIdx;
           document.getElementById('btn-next').disabled = false;
         };
@@ -413,106 +625,182 @@
       document.getElementById('btn-next').disabled = true;
     }
 
-    // 다음 버튼 클릭 시 -> 즉시 Firebase에 이 문제의 답을 기록!
     function submitCurrentAnswerAndNext() {
       if (selectedOptionForCurrentQuestion === null || !currentUserKey) return;
 
       const qId = dilemmas[currentStep].id;
-      // 실시간으로 이 질문의 답변을 RTDB에 기록 (비동기 처리로 딜레이 없음)
       surveysRef.child(`${currentUserKey}/answers/${qId}`).set(selectedOptionForCurrentQuestion);
 
       if (currentStep < dilemmas.length - 1) {
         renderQuestion(currentStep + 1);
       } else {
+        document.getElementById('survey-progress').style.width = `100%`;
         document.getElementById('step-questions').style.display = 'none';
         document.getElementById('step-completed').style.display = 'block';
       }
     }
 
-    /* --- [발표자(Admin) 로직: 전체 문제 한눈에 보기] --- */
+    /* ================= 대시보드(Admin) 통합 로직 ================= */
     function initAdminDashboard() {
-      buildDashboardUI();
-
-      // Firebase 실시간 리스너 연결
       surveysRef.on('value', (snapshot) => {
         const data = snapshot.val();
         liveResponses = data ? Object.values(data) : [];
-        document.getElementById('admin-participant-count').innerText = liveResponses.length;
-        updateDashboardCharts();
+        updateDashboardKPI();
+        renderUnifiedMatrix();
+        renderSpotlight();
       });
     }
 
-    // 대시보드 뼈대(5개 카드) 생성
-    function buildDashboardUI() {
-      const grid = document.getElementById('dashboard-grid');
-      grid.innerHTML = "";
+    function updateDashboardKPI() {
+      const participantCount = liveResponses.length;
+      document.getElementById('kpi-count').innerText = `${participantCount}명`;
 
-      dilemmas.forEach((d) => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.style.marginBottom = '0';
-        card.innerHTML = `
-          <span class="badge">${d.competency}</span>
-          <h3 style="font-size: 16px; margin-bottom: 6px;">Q${d.id}. ${d.title}</h3>
-          <p style="font-size: 13px; color: #666; line-height: 1.4;">${d.desc}</p>
-          
-          <div class="chart-box" id="chart-box-${d.id}">
-            <!-- 실시간 바 차트 들어가는 곳 -->
-          </div>
+      let totalAnswersCount = 0;
+      let closestDiff = 9999;
+      let hottestTitle = "-";
 
-          <div class="insight-box">
-            <strong>💡 역량 포인트:</strong> ${d.insight}
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-
-      updateDashboardCharts();
-    }
-
-    // 실시간 데이터 변경 시 5개 문제의 바 차트 즉각 갱신
-    function updateDashboardCharts() {
-      dilemmas.forEach((d) => {
-        const box = document.getElementById(`chart-box-${d.id}`);
-        if (!box) return;
-
-        // 해당 문제의 응답 집계
-        const counts = [0, 0];
+      dilemmas.forEach(d => {
+        let aCount = 0, bCount = 0;
         liveResponses.forEach(r => {
           if (r.answers && r.answers[d.id] !== undefined) {
-            const choice = r.answers[d.id];
-            if (counts[choice] !== undefined) counts[choice]++;
+            totalAnswersCount++;
+            if (r.answers[d.id] === 0) aCount++;
+            if (r.answers[d.id] === 1) bCount++;
+          }
+        });
+        const total = aCount + bCount;
+        if (total > 0) {
+          const diff = Math.abs(aCount - bCount);
+          if (diff < closestDiff) {
+            closestDiff = diff;
+            hottestTitle = `Q${d.id} (${Math.round((Math.min(aCount,bCount)/total)*100)}% 팽팽)`;
+          }
+        }
+      });
+
+      document.getElementById('kpi-total-votes').innerText = `${totalAnswersCount}건`;
+      document.getElementById('kpi-hot-issue').innerText = hottestTitle;
+    }
+
+    // 좌측 매트릭스 렌더링 (A/B 고대비 색상 및 트랙 바탕 구분)
+    function renderUnifiedMatrix() {
+      const container = document.getElementById('matrix-container');
+      container.innerHTML = "";
+
+      dilemmas.forEach(d => {
+        let counts = [0, 0];
+        liveResponses.forEach(r => {
+          if (r.answers && r.answers[d.id] !== undefined) {
+            counts[r.answers[d.id]]++;
           }
         });
 
         const total = counts[0] + counts[1];
-        box.innerHTML = "";
+        const hasVotes = total > 0;
+        const pctA = hasVotes ? Math.round((counts[0] / total) * 100) : 0;
+        const pctB = hasVotes ? (100 - pctA) : 0;
 
-        d.options.forEach((optText, i) => {
-          const count = counts[i];
-          const percent = total > 0 ? Math.round((count / total) * 100) : 0;
+        const row = document.createElement('div');
+        row.className = `unified-row ${d.id === focusedDilemmaId ? 'active' : ''}`;
+        row.onclick = () => {
+          focusedDilemmaId = d.id;
+          renderUnifiedMatrix();
+          renderSpotlight();
+        };
 
-          const item = document.createElement('div');
-          item.className = 'chart-item';
-          item.innerHTML = `
-            <div class="chart-label">
-              <span style="max-width: 78%; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">
-                <strong>${i + 1}.</strong> ${optText}
-              </span>
-              <span><strong>${percent}%</strong> (${count}명)</span>
+        row.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <div style="font-size:14px; font-weight:700;">
+              Q${d.id}. ${d.title}
             </div>
-            <div class="chart-track">
-              <div class="chart-fill" style="width: ${percent}%"></div>
-            </div>
-          `;
-          box.appendChild(item);
-        });
+            <span style="font-size:11px; background:var(--md-sys-color-surface-container-high); border:1px solid var(--md-sys-color-outline-variant); padding:2px 8px; border-radius:var(--md-shape-full);">
+              ${d.competency}
+            </span>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:500; margin-top:8px;">
+            <span style="color:var(--opt-a-main);">
+              <strong>선택지 A: ${pctA}%</strong> (${counts[0]}명)
+            </span>
+            <span style="color:var(--opt-b-main);">
+              <strong>선택지 B: ${pctB}%</strong> (${counts[1]}명)
+            </span>
+          </div>
+
+          <!-- 확실한 트랙 배경과 고대비 채움 바 -->
+          <div class="vs-bar-track">
+            <div class="vs-seg-a" style="width: ${pctA}%;"></div>
+            <div class="vs-seg-b" style="width: ${pctB}%;"></div>
+          </div>
+        `;
+        container.appendChild(row);
       });
     }
 
-    // 데이터 초기화
+    // 우측 스포트라이트 상세 뷰 (A=블루, B=오렌지/앰버)
+    function renderSpotlight() {
+      const d = dilemmas.find(item => item.id === focusedDilemmaId) || dilemmas[0];
+      const box = document.getElementById('spotlight-box');
+
+      let counts = [0, 0];
+      liveResponses.forEach(r => {
+        if (r.answers && r.answers[d.id] !== undefined) {
+          counts[r.answers[d.id]]++;
+        }
+      });
+      const total = counts[0] + counts[1];
+      const pctA = total > 0 ? Math.round((counts[0] / total) * 100) : 0;
+      const pctB = total > 0 ? Math.round((counts[1] / total) * 100) : 0;
+
+      box.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span class="m3-chip" style="margin-bottom:0; background:var(--md-sys-color-primary-container); color:var(--md-sys-color-on-primary-container); border:none;">
+            스포트라이트 Q${d.id}
+          </span>
+          <span style="font-size:12px; font-weight:700; color:var(--md-sys-color-primary);">${d.competency}</span>
+        </div>
+
+        <h3 style="font-size:18px; margin-top:10px; line-height:1.35;">${d.title}</h3>
+        <p style="font-size:13px; color:var(--md-sys-color-on-surface-variant); margin-top:8px; line-height:1.5;">${d.desc}</p>
+
+        <!-- 선택지 A 결과 카드 (Blue Theme) -->
+        <div class="choice-result-box type-a">
+          <div style="display:flex; justify-content:space-between; font-weight:700; font-size:13px; margin-bottom:4px;">
+            <span style="color:var(--opt-a-main);">[선택지 A]</span>
+            <span style="font-size:16px; color:var(--opt-a-main);">${pctA}% <small style="font-size:12px;">(${counts[0]}명)</small></span>
+          </div>
+          <div style="font-size:13px; line-height:1.4;">${d.options[0]}</div>
+          <div class="inner-meter-track">
+            <div class="inner-meter-fill-a" style="width: ${pctA}%;"></div>
+          </div>
+        </div>
+
+        <!-- 선택지 B 결과 카드 (Amber/Orange Theme) -->
+        <div class="choice-result-box type-b">
+          <div style="display:flex; justify-content:space-between; font-weight:700; font-size:13px; margin-bottom:4px;">
+            <span style="color:var(--opt-b-main);">[선택지 B]</span>
+            <span style="font-size:16px; color:var(--opt-b-main);">${pctB}% <small style="font-size:12px;">(${counts[1]}명)</small></span>
+          </div>
+          <div style="font-size:13px; line-height:1.4;">${d.options[1]}</div>
+          <div class="inner-meter-track">
+            <div class="inner-meter-fill-b" style="width: ${pctB}%;"></div>
+          </div>
+        </div>
+
+        <!-- 교과서 토론 인사이트 -->
+        <div style="background:var(--md-sys-color-surface-container); border-radius:var(--md-shape-l); padding:16px; margin-top:16px; border-left:4px solid var(--md-sys-color-primary);">
+          <div style="font-size:12px; font-weight:700; color:var(--md-sys-color-primary); margin-bottom:4px; display:flex; align-items:center; gap:4px;">
+            <span class="material-symbols-outlined" style="font-size:16px;">lightbulb</span> 교과서 핵심 포인트 및 수업 피드백
+          </div>
+          <div style="font-size:13px; color:var(--md-sys-color-on-surface); line-height:1.5;">
+            ${d.insight}
+          </div>
+        </div>
+      `;
+    }
+
     function resetSurveyData() {
-      if (confirm("모든 투표 데이터를 초기화하시겠습니까?")) {
+      if (confirm("모든 투표 및 응답자 데이터를 초기화하시겠습니까?")) {
         surveysRef.remove().then(() => {
           alert("데이터가 깨끗하게 초기화되었습니다.");
         });
