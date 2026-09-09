@@ -44,7 +44,7 @@
       padding: 16px;
     }
 
-    /* M3 Card (Outlined / Elevated 형태) */
+    /* M3 Card */
     .m3-card {
       background: var(--md-sys-color-surface);
       border: 1px solid var(--md-sys-color-outline-variant);
@@ -60,7 +60,7 @@
     .body-medium { font-size: 14px; font-weight: 400; color: var(--md-sys-color-on-surface-variant); line-height: 20px; }
     .title-medium { font-size: 16px; font-weight: 500; line-height: 24px; }
 
-    /* M3 Text Field (Outlined Style) */
+    /* M3 Text Field */
     .m3-text-field {
       width: 100%;
       padding: 16px;
@@ -74,10 +74,10 @@
     }
     .m3-text-field:focus {
       border: 2px solid var(--md-sys-color-primary);
-      padding: 15px; /* 보정 */
+      padding: 15px;
     }
 
-    /* M3 Filled Button (기본 알약 형태) */
+    /* M3 Buttons */
     .m3-btn-filled {
       background-color: var(--md-sys-color-primary);
       color: var(--md-sys-color-on-primary);
@@ -97,7 +97,6 @@
     .m3-btn-filled:hover { box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
     .m3-btn-filled:disabled { background-color: var(--md-sys-color-outline-variant); cursor: not-allowed; }
 
-    /* M3 Tonal Button (회색-연보라 톤 보조 버튼) */
     .m3-btn-tonal {
       background-color: var(--md-sys-color-secondary-container);
       color: var(--md-sys-color-on-secondary-container);
@@ -110,7 +109,7 @@
       min-height: 40px;
     }
 
-    /* 피그마 에셋 느낌의 M3 객관식 선택 버튼 (Tonal Selection) */
+    /* M3 Choice Selection Cards */
     .choice-group {
       display: flex;
       flex-direction: column;
@@ -129,6 +128,7 @@
       cursor: pointer;
       transition: background-color 0.15s, border-color 0.15s;
       text-align: left;
+      width: 100%;
     }
     .m3-choice-card:hover {
       background-color: var(--md-sys-color-secondary-container);
@@ -149,7 +149,6 @@
       flex-shrink: 0;
     }
 
-    /* M3 Assist Chip (참여자 태그) */
     .m3-chip {
       display: inline-flex;
       align-items: center;
@@ -162,7 +161,6 @@
       margin: 4px;
     }
 
-    /* Leaderboard Item */
     .leaderboard-row {
       display: flex;
       justify-content: space-between;
@@ -220,16 +218,15 @@
 
     <!-- 3. 순위표 -->
     <div id="admin-rank" class="hidden">
-      <h2 class="headline-small">Results</h2>
+      <h2 class="headline-small" id="admin-rank-title">Results</h2>
       <div id="admin-leaderboard" style="margin: 16px 0 24px 0;"></div>
-      <button class="m3-btn-filled" onclick="nextQuestion()">Next Question</button>
+      <button class="m3-btn-filled" id="btn-admin-next-q" onclick="nextQuestion()">Next Question</button>
     </div>
   </div>
 
-
   <!-- ======================= 학생 (Student) 화면 ======================= -->
   <div id="student-view" class="m3-card hidden">
-    <!-- 1. 입장 (Text Field & Filled Button) -->
+    <!-- 1. 입장 -->
     <div id="student-login">
       <h1 class="headline-small">Enter Quiz</h1>
       <p class="body-medium">Please enter your nickname to continue.</p>
@@ -243,7 +240,7 @@
       <p class="body-medium" style="margin-top: 8px;">The quiz will begin shortly. Look at the presenter's screen.</p>
     </div>
 
-    <!-- 3. 답안 선택 (피그마 기본 컴포넌트 목록 형태) -->
+    <!-- 3. 답안 선택 -->
     <div id="student-quiz" class="hidden">
       <h2 class="title-medium" id="student-q-title">Select your answer</h2>
       <div class="choice-group">
@@ -261,8 +258,62 @@
     </div>
   </div>
 
-
   <script>
+    // ==========================================
+    // =============== 사운드 매니저 =============
+    // ==========================================
+    const SoundManager = {
+      // 배경음악
+      bgmQuiz: new Audio('문제풀이.mp3'),
+      bgmWin: new Audio('승리.mp3'),
+
+      // 효과음
+      sfxMenu: new Audio('메뉴.mp3'),
+      sfxCorrect: new Audio('정답.mp3'),
+      sfxWrong: new Audio('오답.mp3'),
+      sfxCelebrate: new Audio('축하.mp3'),
+
+      init() {
+        this.bgmQuiz.loop = true;
+        this.bgmQuiz.volume = 0.45; // 배경음악은 약간 작게
+        this.bgmWin.volume = 0.6;
+      },
+
+      playBgmQuiz() {
+        // 이미 승리 음악이 켜져 있다면 정지
+        this.bgmWin.pause();
+        // 문제풀이 음악이 이미 재생 중이 아닐 때만 재생 시작 (끊김 없이 이어짐)
+        if (this.bgmQuiz.paused) {
+          this.bgmQuiz.play().catch(e => console.log('Autoplay prevented:', e));
+        }
+      },
+
+      playBgmWin() {
+        this.stopBgm();
+        this.bgmWin.currentTime = 0;
+        this.bgmWin.play().catch(e => console.log('Autoplay prevented:', e));
+      },
+
+      stopBgm() {
+        this.bgmQuiz.pause();
+        this.bgmWin.pause();
+      },
+
+      playSfx(type) {
+        let sound = null;
+        if (type === 'menu') sound = this.sfxMenu;
+        else if (type === 'correct') sound = this.sfxCorrect;
+        else if (type === 'wrong') sound = this.sfxWrong;
+        else if (type === 'celebrate') sound = this.sfxCelebrate;
+
+        if (sound) {
+          sound.currentTime = 0;
+          sound.play().catch(e => console.log('SFX play failed:', e));
+        }
+      }
+    };
+    SoundManager.init();
+
     // 1. Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyBnCJlp6JA4bEl7a8waxnBoJ8rC106URjE",
@@ -331,6 +382,7 @@
     }
 
     function startGame() {
+      SoundManager.playSfx('menu');
       db.ref('gameSession').update({
         state: 'question',
         currentQIndex: 0,
@@ -340,6 +392,9 @@
     }
 
     function loadAdminQuestion(idx) {
+      // 문제 시작 시 문제풀이 BGM 시작
+      SoundManager.playBgmQuiz();
+
       const q = quizData[idx];
       document.getElementById('admin-lobby').classList.add('hidden');
       document.getElementById('admin-rank').classList.add('hidden');
@@ -361,57 +416,74 @@
     }
 
     function revealOrNext() {
-  db.ref('gameSession').once('value', snap => {
-    const data = snap.val();
-    if (!data) return;
+      // BGM을 끄지 않고 계속 이어지게 유지
 
-    const currentIdx = data.currentQIndex || 0;
-    const correctAns = quizData[currentIdx].ans;
-    const players = data.players || {};
+      db.ref('gameSession').once('value', snap => {
 
-    // [수정] null 체크 추가
-    Object.keys(players).forEach(pid => {
-      const p = players[pid];
-      if (p && p.lastAnswer === correctAns) {
-        const newScore = (p.score || 0) + 1000;
-        db.ref(`gameSession/players/${pid}/score`).set(newScore);
-        p.score = newScore; // 순위표 즉시 반영을 위해 로컬 객체도 갱신
+
+        const data = snap.val();
+        if (!data) return;
+
+        const currentIdx = data.currentQIndex || 0;
+        const correctAns = quizData[currentIdx].ans;
+        const players = data.players || {};
+
+        Object.keys(players).forEach(pid => {
+          const p = players[pid];
+          if (p && p.lastAnswer === correctAns) {
+            const newScore = (p.score || 0) + 1000;
+            db.ref(`gameSession/players/${pid}/score`).set(newScore);
+            p.score = newScore;
+          }
+        });
+
+        db.ref('gameSession').update({ reveal: true, state: 'reveal' });
+        showLeaderboard(players, currentIdx);
+      });
+    }
+
+    function showLeaderboard(players, currentIdx) {
+      document.getElementById('admin-quiz').classList.add('hidden');
+      document.getElementById('admin-rank').classList.remove('hidden');
+
+      const isLastQuestion = currentIdx >= quizData.length - 1;
+      const nextBtn = document.getElementById('btn-admin-next-q');
+      const title = document.getElementById('admin-rank-title');
+
+      if (isLastQuestion) {
+        title.innerText = "🏆 Final Champions";
+        nextBtn.innerText = "Finish Session";
+        SoundManager.stopBgm();    // 모든 퀴즈가 끝나면 문제풀이 BGM 정지
+        SoundManager.playBgmWin(); // 마지막 결과 화면에서만 승리 BGM 재생
+      } else {
+        title.innerText = "Current Standings";
+        nextBtn.innerText = "Next Question";
+        // 다음 문제로 넘어갈 때까지 배경음악이 끊김 없이 계속 흐릅니다.
       }
-    });
 
-    db.ref('gameSession').update({ reveal: true, state: 'reveal' });
-    showLeaderboard(players);
-  });
-}
+      const board = document.getElementById('admin-leaderboard');
+      if (!players || Object.keys(players).length === 0) {
+        board.innerHTML = `<p class="body-medium">참여한 플레이어가 없습니다.</p>`;
+        return;
+      }
 
-    function showLeaderboard(players) {
-  document.getElementById('admin-quiz').classList.add('hidden');
-  document.getElementById('admin-rank').classList.remove('hidden');
+      const sorted = Object.values(players)
+        .filter(p => p && typeof p === 'object')
+        .sort((a, b) => ((b.score || 0) - (a.score || 0)));
 
-  const board = document.getElementById('admin-leaderboard');
-  
-  if (!players || Object.keys(players).length === 0) {
-    board.innerHTML = `<p class="body-medium">참여한 플레이어가 없습니다.</p>`;
-    return;
-  }
-
-  // [수정] null이나 undefined가 섞여있어도 안전하게 정렬
-  const sorted = Object.values(players)
-    .filter(p => p && typeof p === 'object')
-    .sort((a, b) => ((b.score || 0) - (a.score || 0)));
-
-  board.innerHTML = sorted.map((p, idx) => `
-    <div class="leaderboard-row">
-      <span>#${idx + 1} ${p.name || 'Anonymous'}</span>
-      <b>${p.score || 0} pts</b>
-    </div>
-  `).join('');
-}
+      board.innerHTML = sorted.map((p, idx) => `
+        <div class="leaderboard-row">
+          <span>#${idx + 1} ${p.name || 'Anonymous'}</span>
+          <b>${p.score || 0} pts</b>
+        </div>
+      `).join('');
+    }
 
     function nextQuestion() {
+      SoundManager.playSfx('menu');
       db.ref('gameSession').once('value', snap => {
         const data = snap.val();
-        const nextIdx = data.currentQIndex + 1;
+        const nextIdx = (data.currentQIndex || 0) + 1;
         if (nextIdx < quizData.length) {
           db.ref('gameSession').update({
             state: 'question',
@@ -420,13 +492,14 @@
           });
           loadAdminQuestion(nextIdx);
         } else {
-          alert('All questions completed.');
+          alert('모든 퀴즈가 완료되었습니다!');
           resetGame();
         }
       });
     }
 
     function resetGame() {
+      SoundManager.stopBgm();
       db.ref('gameSession').set({
         state: 'lobby',
         currentQIndex: 0,
@@ -445,13 +518,16 @@
         if (!data) return;
 
         if (data.state === 'lobby' && myNickname) {
+          SoundManager.stopBgm();
           showStudentScreen('student-wait');
         }
         if (data.state === 'question') {
+          // 음악 중복 방지: 배경음은 교사 화면에서만 재생
           showStudentScreen('student-quiz');
           enableChoices(true);
         }
         if (data.state === 'reveal') {
+          SoundManager.stopBgm();
           showStudentScreen('student-result');
           checkMyResult(data.currentQIndex);
         }
@@ -459,6 +535,7 @@
     }
 
     function joinGame() {
+      SoundManager.playSfx('menu');
       const name = document.getElementById('player-nickname').value.trim();
       if (!name) return alert('Please enter your name');
       myNickname = name;
@@ -473,7 +550,10 @@
     }
 
     function submitAnswer(choiceIndex) {
+      // 선택 시 메뉴(클릭) 효과음
+      SoundManager.playSfx('menu');
       enableChoices(false);
+      
       db.ref(`gameSession/players/${myPlayerId}`).update({
         lastAnswer: choiceIndex
       });
@@ -483,31 +563,26 @@
     }
 
     function checkMyResult(qIndex) {
-  const correctAns = quizData[qIndex].ans;
-  db.ref(`gameSession/players/${myPlayerId}`).once('value', snap => {
-    const me = snap.val();
-    
-    // [수정] DB에 내 정보가 없거나 리셋된 경우 방어
-    if (!me) {
-      document.getElementById('student-result-text').innerText = "결과 대기 중";
-      document.getElementById('student-score-info').innerText = "";
-      return;
-    }
+      const correctAns = quizData[qIndex].ans;
+      db.ref(`gameSession/players/${myPlayerId}`).once('value', snap => {
+        const me = snap.val();
+        if (!me) return;
 
-    const myAns = me.lastAnswer;
-    if (myAns === correctAns) {
-      document.getElementById('student-result-text').innerText = "Correct";
-      document.getElementById('student-result-text').style.color = "var(--md-sys-color-primary)";
-    } else {
-      document.getElementById('student-result-text').innerText = "Incorrect";
-      document.getElementById('student-result-text').style.color = "var(--md-sys-color-error)";
+        const myAns = me.lastAnswer;
+        if (myAns === correctAns) {
+          SoundManager.playSfx('correct'); // 정답 효과음
+          document.getElementById('student-result-text').innerText = "Correct! 🎉";
+          document.getElementById('student-result-text').style.color = "var(--md-sys-color-primary)";
+        } else {
+          SoundManager.playSfx('wrong'); // 오답 효과음
+          document.getElementById('student-result-text').innerText = "Incorrect 😢";
+          document.getElementById('student-result-text').style.color = "var(--md-sys-color-error)";
+        }
+        
+        const currentScore = me.score || 0;
+        document.getElementById('student-score-info').innerText = `Total Score: ${currentScore} pts`;
+      });
     }
-    
-    // 안전하게 score 읽기
-    const currentScore = me.score || 0;
-    document.getElementById('student-score-info').innerText = `Total Score: ${currentScore} pts`;
-  });
-}
 
     function showStudentScreen(screenId) {
       ['student-login', 'student-wait', 'student-quiz', 'student-result'].forEach(id => {
