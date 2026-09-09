@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Material 3 Quiz Session</title>
+  
+  <!-- Roboto Font (M3 표준 서체) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <style>
+    /* ================= Material 3 Color Tokens (Figma Default) ================= */
+    :root {
+      --md-sys-color-primary: #6750a4;
+      --md-sys-color-on-primary: #ffffff;
+      --md-sys-color-primary-container: #eaddff;
+      --md-sys-color-on-primary-container: #21005d;
+      --md-sys-color-secondary-container: #e8def8;
+      --md-sys-color-on-secondary-container: #1d192b;
+      --md-sys-color-surface: #fef7ff;
+      --md-sys-color-surface-container: #f3edf7;
+      --md-sys-color-on-surface: #1d1b20;
+      --md-sys-color-on-surface-variant: #49454f;
+      --md-sys-color-outline: #79747e;
+      --md-sys-color-outline-variant: #cac4d0;
+      --md-sys-color-error: #b3261e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
+    
+    body {
+      background-color: var(--md-sys-color-surface-container);
+      color: var(--md-sys-color-on-surface);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    /* M3 Card (Outlined / Elevated 형태) */
+    .m3-card {
+      background: var(--md-sys-color-surface);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: 24px;
+      padding: 32px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 1px 3px 1px rgba(0, 0, 0, 0.05);
+    }
+
+    /* M3 Typography */
+    .headline-small { font-size: 24px; font-weight: 500; line-height: 32px; margin-bottom: 8px; }
+    .body-medium { font-size: 14px; font-weight: 400; color: var(--md-sys-color-on-surface-variant); line-height: 20px; }
+    .title-medium { font-size: 16px; font-weight: 500; line-height: 24px; }
+
+    /* M3 Text Field (Outlined Style) */
+    .m3-text-field {
+      width: 100%;
+      padding: 16px;
+      border: 1px solid var(--md-sys-color-outline);
+      border-radius: 8px;
+      font-size: 16px;
+      outline: none;
+      margin: 20px 0 16px 0;
+      background: transparent;
+      transition: border-color 0.2s;
+    }
+    .m3-text-field:focus {
+      border: 2px solid var(--md-sys-color-primary);
+      padding: 15px; /* 보정 */
+    }
+
+    /* M3 Filled Button (기본 알약 형태) */
+    .m3-btn-filled {
+      background-color: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+      border: none;
+      border-radius: 20px;
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.1px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      transition: box-shadow 0.2s, opacity 0.2s;
+    }
+    .m3-btn-filled:hover { box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+    .m3-btn-filled:disabled { background-color: var(--md-sys-color-outline-variant); cursor: not-allowed; }
+
+    /* M3 Tonal Button (회색-연보라 톤 보조 버튼) */
+    .m3-btn-tonal {
+      background-color: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container);
+      border: none;
+      border-radius: 20px;
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      min-height: 40px;
+    }
+
+    /* 피그마 에셋 느낌의 M3 객관식 선택 버튼 (Tonal Selection) */
+    .choice-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 24px 0;
+    }
+    .m3-choice-card {
+      background: var(--md-sys-color-surface);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.15s, border-color 0.15s;
+      text-align: left;
+    }
+    .m3-choice-card:hover {
+      background-color: var(--md-sys-color-secondary-container);
+      border-color: var(--md-sys-color-primary);
+    }
+    .m3-choice-card .prefix-circle {
+      width: 28px;
+      height: 28px;
+      border-radius: 14px;
+      background: var(--md-sys-color-primary-container);
+      color: var(--md-sys-color-on-primary-container);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      margin-right: 16px;
+      flex-shrink: 0;
+    }
+
+    /* M3 Assist Chip (참여자 태그) */
+    .m3-chip {
+      display: inline-flex;
+      align-items: center;
+      height: 32px;
+      padding: 0 16px;
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--md-sys-color-on-surface);
+      margin: 4px;
+    }
+
+    /* Leaderboard Item */
+    .leaderboard-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 14px 4px;
+      border-bottom: 1px solid var(--md-sys-color-outline-variant);
+      font-size: 15px;
+    }
+
+    .badge-admin {
+      background-color: var(--md-sys-color-primary-container);
+      color: var(--md-sys-color-on-primary-container);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- ======================= 교사 (Admin) 화면 ======================= -->
+  <div id="admin-view" class="m3-card hidden">
+    <span class="badge-admin">Admin Dashboard</span>
+    <h1 class="headline-small" id="admin-title">Session Setup</h1>
+    
+    <!-- 1. 로비 -->
+    <div id="admin-lobby">
+      <p class="body-medium">Players will appear here once they join.</p>
+      <div id="admin-player-list" style="margin: 20px 0; min-height: 48px;"></div>
+      <div style="display: flex; gap: 8px;">
+        <button class="m3-btn-filled" onclick="startGame()">Start Session</button>
+        <button class="m3-btn-tonal" onclick="resetGame()">Reset</button>
+      </div>
+    </div>
+
+    <!-- 2. 문제 진행 화면 -->
+    <div id="admin-quiz" class="hidden">
+      <p class="body-medium" style="margin-top: 12px;">Current Question</p>
+      <h2 class="title-medium" id="admin-question-text" style="font-size: 18px; margin: 6px 0 20px 0;">Question title</h2>
+
+      <div class="choice-group">
+        <div class="m3-choice-card"><span class="prefix-circle">A</span><span id="admin-c0">Choice 1</span></div>
+        <div class="m3-choice-card"><span class="prefix-circle">B</span><span id="admin-c1">Choice 2</span></div>
+        <div class="m3-choice-card"><span class="prefix-circle">C</span><span id="admin-c2">Choice 3</span></div>
+        <div class="m3-choice-card"><span class="prefix-circle">D</span><span id="admin-c3">Choice 4</span></div>
+      </div>
+
+      <p class="body-medium" style="margin-bottom: 16px;">Responses received: <b id="admin-submitted-count">0</b></p>
+      <button class="m3-btn-filled" id="btn-next-step" onclick="revealOrNext()">Reveal Result</button>
+    </div>
+
+    <!-- 3. 순위표 -->
+    <div id="admin-rank" class="hidden">
+      <h2 class="headline-small">Results</h2>
+      <div id="admin-leaderboard" style="margin: 16px 0 24px 0;"></div>
+      <button class="m3-btn-filled" onclick="nextQuestion()">Next Question</button>
+    </div>
+  </div>
+
+
+  <!-- ======================= 학생 (Student) 화면 ======================= -->
+  <div id="student-view" class="m3-card hidden">
+    <!-- 1. 입장 (Text Field & Filled Button) -->
+    <div id="student-login">
+      <h1 class="headline-small">Enter Quiz</h1>
+      <p class="body-medium">Please enter your nickname to continue.</p>
+      <input type="text" id="player-nickname" class="m3-text-field" placeholder="Display name">
+      <button class="m3-btn-filled" style="width: 100%;" onclick="joinGame()">Join</button>
+    </div>
+
+    <!-- 2. 대기 상태 -->
+    <div id="student-wait" class="hidden">
+      <h2 class="headline-small">Waiting...</h2>
+      <p class="body-medium" style="margin-top: 8px;">The quiz will begin shortly. Look at the presenter's screen.</p>
+    </div>
+
+    <!-- 3. 답안 선택 (피그마 기본 컴포넌트 목록 형태) -->
+    <div id="student-quiz" class="hidden">
+      <h2 class="title-medium" id="student-q-title">Select your answer</h2>
+      <div class="choice-group">
+        <button class="m3-choice-card" onclick="submitAnswer(0)"><span class="prefix-circle">A</span>Option 1</button>
+        <button class="m3-choice-card" onclick="submitAnswer(1)"><span class="prefix-circle">B</span>Option 2</button>
+        <button class="m3-choice-card" onclick="submitAnswer(2)"><span class="prefix-circle">C</span>Option 3</button>
+        <button class="m3-choice-card" onclick="submitAnswer(3)"><span class="prefix-circle">D</span>Option 4</button>
+      </div>
+    </div>
+
+    <!-- 4. 결과 알림 -->
+    <div id="student-result" class="hidden">
+      <h2 class="headline-small" id="student-result-text">Answer Submitted</h2>
+      <p class="body-medium" id="student-score-info" style="margin-top: 8px;"></p>
+    </div>
+  </div>
+
+
+  <script>
+    // 1. Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBnCJlp6JA4bEl7a8waxnBoJ8rC106URjE",
+      authDomain: "tjdwlr1.firebaseapp.com",
+      databaseURL: "https://tjdwlr1-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "tjdwlr1",
+      storageBucket: "tjdwlr1.firebasestorage.app",
+      messagingSenderId: "372877966634",
+      appId: "1:372877966634:web:5977767092350f289e3253"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // 2. Quiz Dataset
+    const quizData = [
+      {
+        q: "대한민국의 수도는 어디일까요?",
+        choices: ["부산", "인천", "서울", "대구"],
+        ans: 2
+      },
+      {
+        q: "웹 브라우저에서 동작하는 표준 프로그래밍 언어는?",
+        choices: ["Python", "JavaScript", "Java", "C++"],
+        ans: 1
+      },
+      {
+        q: "HTML은 무엇의 약자일까요?",
+        choices: ["HyperText Markup Language", "HighText Machine Language", "Hyperlink Text Mode Language", "Home Tool Markup Language"],
+        ans: 0
+      }
+    ];
+
+    // 3. State & Variables
+    const urlParams = new URLSearchParams(window.location.search);
+    const isAdmin = urlParams.get('admin') === 't';
+    let myPlayerId = localStorage.getItem('m3_player_id') || 'p_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('m3_player_id', myPlayerId);
+    let myNickname = '';
+
+    // 4. View Initialization
+    if (isAdmin) {
+      document.getElementById('admin-view').classList.remove('hidden');
+      initAdmin();
+    } else {
+      document.getElementById('student-view').classList.remove('hidden');
+      initStudent();
+    }
+
+    // ==========================================
+    // ============= 교사(Admin) 로직 ============
+    // ==========================================
+    function initAdmin() {
+      db.ref('gameSession').on('value', snapshot => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        const players = data.players || {};
+        const playerListDiv = document.getElementById('admin-player-list');
+        playerListDiv.innerHTML = Object.values(players).map(p => `<span class="m3-chip">${p.name}</span>`).join('');
+        
+        if (data.state === 'question') {
+          const submittedCount = Object.values(players).filter(p => p.lastAnswer !== undefined && p.lastAnswer !== null).length;
+          document.getElementById('admin-submitted-count').innerText = submittedCount;
+        }
+      });
+    }
+
+    function startGame() {
+      db.ref('gameSession').update({
+        state: 'question',
+        currentQIndex: 0,
+        reveal: false
+      });
+      loadAdminQuestion(0);
+    }
+
+    function loadAdminQuestion(idx) {
+      const q = quizData[idx];
+      document.getElementById('admin-lobby').classList.add('hidden');
+      document.getElementById('admin-rank').classList.add('hidden');
+      document.getElementById('admin-quiz').classList.remove('hidden');
+
+      document.getElementById('admin-question-text').innerText = `${idx + 1}. ${q.q}`;
+      document.getElementById('admin-c0').innerText = q.choices[0];
+      document.getElementById('admin-c1').innerText = q.choices[1];
+      document.getElementById('admin-c2').innerText = q.choices[2];
+      document.getElementById('admin-c3').innerText = q.choices[3];
+      document.getElementById('btn-next-step').innerText = "Reveal Result";
+
+      db.ref('gameSession/players').once('value', snap => {
+        const players = snap.val() || {};
+        Object.keys(players).forEach(k => {
+          db.ref(`gameSession/players/${k}/lastAnswer`).set(null);
+        });
+      });
+    }
+
+    function revealOrNext() {
+  db.ref('gameSession').once('value', snap => {
+    const data = snap.val();
+    if (!data) return;
+
+    const currentIdx = data.currentQIndex || 0;
+    const correctAns = quizData[currentIdx].ans;
+    const players = data.players || {};
+
+    // [수정] null 체크 추가
+    Object.keys(players).forEach(pid => {
+      const p = players[pid];
+      if (p && p.lastAnswer === correctAns) {
+        const newScore = (p.score || 0) + 1000;
+        db.ref(`gameSession/players/${pid}/score`).set(newScore);
+        p.score = newScore; // 순위표 즉시 반영을 위해 로컬 객체도 갱신
+      }
+    });
+
+    db.ref('gameSession').update({ reveal: true, state: 'reveal' });
+    showLeaderboard(players);
+  });
+}
+
+    function showLeaderboard(players) {
+  document.getElementById('admin-quiz').classList.add('hidden');
+  document.getElementById('admin-rank').classList.remove('hidden');
+
+  const board = document.getElementById('admin-leaderboard');
+  
+  if (!players || Object.keys(players).length === 0) {
+    board.innerHTML = `<p class="body-medium">참여한 플레이어가 없습니다.</p>`;
+    return;
+  }
+
+  // [수정] null이나 undefined가 섞여있어도 안전하게 정렬
+  const sorted = Object.values(players)
+    .filter(p => p && typeof p === 'object')
+    .sort((a, b) => ((b.score || 0) - (a.score || 0)));
+
+  board.innerHTML = sorted.map((p, idx) => `
+    <div class="leaderboard-row">
+      <span>#${idx + 1} ${p.name || 'Anonymous'}</span>
+      <b>${p.score || 0} pts</b>
+    </div>
+  `).join('');
+}
+
+    function nextQuestion() {
+      db.ref('gameSession').once('value', snap => {
+        const data = snap.val();
+        const nextIdx = data.currentQIndex + 1;
+        if (nextIdx < quizData.length) {
+          db.ref('gameSession').update({
+            state: 'question',
+            currentQIndex: nextIdx,
+            reveal: false
+          });
+          loadAdminQuestion(nextIdx);
+        } else {
+          alert('All questions completed.');
+          resetGame();
+        }
+      });
+    }
+
+    function resetGame() {
+      db.ref('gameSession').set({
+        state: 'lobby',
+        currentQIndex: 0,
+        reveal: false,
+        players: {}
+      });
+      location.reload();
+    }
+
+    // ==========================================
+    // ============ 학생(Student) 로직 ============
+    // ==========================================
+    function initStudent() {
+      db.ref('gameSession').on('value', snapshot => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        if (data.state === 'lobby' && myNickname) {
+          showStudentScreen('student-wait');
+        }
+        if (data.state === 'question') {
+          showStudentScreen('student-quiz');
+          enableChoices(true);
+        }
+        if (data.state === 'reveal') {
+          showStudentScreen('student-result');
+          checkMyResult(data.currentQIndex);
+        }
+      });
+    }
+
+    function joinGame() {
+      const name = document.getElementById('player-nickname').value.trim();
+      if (!name) return alert('Please enter your name');
+      myNickname = name;
+
+      db.ref(`gameSession/players/${myPlayerId}`).set({
+        name: myNickname,
+        score: 0,
+        lastAnswer: null
+      });
+
+      showStudentScreen('student-wait');
+    }
+
+    function submitAnswer(choiceIndex) {
+      enableChoices(false);
+      db.ref(`gameSession/players/${myPlayerId}`).update({
+        lastAnswer: choiceIndex
+      });
+      document.getElementById('student-result-text').innerText = "Response recorded";
+      document.getElementById('student-score-info').innerText = "Please wait for the results to be revealed.";
+      showStudentScreen('student-result');
+    }
+
+    function checkMyResult(qIndex) {
+  const correctAns = quizData[qIndex].ans;
+  db.ref(`gameSession/players/${myPlayerId}`).once('value', snap => {
+    const me = snap.val();
+    
+    // [수정] DB에 내 정보가 없거나 리셋된 경우 방어
+    if (!me) {
+      document.getElementById('student-result-text').innerText = "결과 대기 중";
+      document.getElementById('student-score-info').innerText = "";
+      return;
+    }
+
+    const myAns = me.lastAnswer;
+    if (myAns === correctAns) {
+      document.getElementById('student-result-text').innerText = "Correct";
+      document.getElementById('student-result-text').style.color = "var(--md-sys-color-primary)";
+    } else {
+      document.getElementById('student-result-text').innerText = "Incorrect";
+      document.getElementById('student-result-text').style.color = "var(--md-sys-color-error)";
+    }
+    
+    // 안전하게 score 읽기
+    const currentScore = me.score || 0;
+    document.getElementById('student-score-info').innerText = `Total Score: ${currentScore} pts`;
+  });
+}
+
+    function showStudentScreen(screenId) {
+      ['student-login', 'student-wait', 'student-quiz', 'student-result'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById(screenId).classList.remove('hidden');
+    }
+
+    function enableChoices(enable) {
+      const buttons = document.querySelectorAll('#student-quiz .m3-choice-card');
+      buttons.forEach(btn => {
+        btn.style.pointerEvents = enable ? 'auto' : 'none';
+        btn.style.opacity = enable ? '1' : '0.5';
+      });
+    }
+  </script>
+</body>
+</html>
