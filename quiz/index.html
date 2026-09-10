@@ -306,12 +306,18 @@
           const progressPercent = ((currentIdx + 1) / totalQ) * 100;
           document.getElementById('student-progress-bar').style.width = `${progressPercent}%`;
 
-          // 새 문제 시작 시 답변 플래그 리셋 및 호스트가 전송한 보기 표시
+          // 새 문제 시작 시 답변 플래그 리셋 및 호스트가 전송한 질문/보기 표시
           if (data.reveal === false && !hasAnsweredCurrentQ) {
             const qData = data.currentQuestionData;
-            if (qData && qData.choices) {
-              for (let i = 0; i < 4; i++) {
-                document.getElementById(`student-opt-${i}`).innerText = qData.choices[i] || '';
+            if (qData) {
+              // 1. 질문 문항 텍스트 반영 (예: "Q1. 대한민국의 수도는 어디일까요?")
+              document.getElementById('student-q-title').innerText = `Q${currentIdx + 1}. ${qData.q || ''}`;
+
+              // 2. 보기 텍스트 반영
+              if (qData.choices) {
+                for (let i = 0; i < 4; i++) {
+                  document.getElementById(`student-opt-${i}`).innerText = qData.choices[i] || '';
+                }
               }
             }
             showScreen('student-quiz');
