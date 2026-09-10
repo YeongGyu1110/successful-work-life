@@ -400,7 +400,15 @@
         this.bgmWin.volume = 0.6;
       },
       playLobby() { this.stop(); this.bgmLobby.currentTime = 0; this.bgmLobby.play().catch(() => {}); },
-      playQuiz() { this.stop(); this.bgmQuiz.currentTime = 0; this.bgmQuiz.play().catch(() => {}); },
+      playQuiz() {
+        // 로비나 승리 BGM만 정지하고, 퀴즈 BGM은 이미 재생 중이면 유지(끊김/재시작 방지)
+        this.bgmLobby.pause();
+        this.bgmWin.pause();
+        if (this.winTimer) clearTimeout(this.winTimer);
+        if (this.bgmQuiz.paused) {
+          this.bgmQuiz.play().catch(() => {});
+        }
+      },
       playWin() { this.stop(); this.bgmWin.currentTime = 0; this.bgmWin.play().catch(() => {}); },
       stop() {
         if (this.winTimer) clearTimeout(this.winTimer);
@@ -598,6 +606,7 @@
 
     function resetGame() {
       SoundManager.stop();
+      SoundManager.bgmQuiz.currentTime = 0;
       db.ref('gameSession').set({
         state: 'lobby',
         currentQIndex: 0,
