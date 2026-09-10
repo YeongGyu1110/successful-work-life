@@ -498,10 +498,20 @@
 
       document.getElementById('btn-next-step').disabled = false;
 
+      // 문제 출제 시각을 DB에 기록 (학생 스피드 점수 산출용)
+      const qStartTime = Date.now();
+      db.ref('gameSession').update({ questionStartTime: qStartTime });
+
       // 이전 라운드 플레이어 응답값 초기화
       db.ref('gameSession/players').once('value', snap => {
         const players = snap.val() || {};
-        Object.keys(players).forEach(k => db.ref(`gameSession/players/${k}/lastAnswer`).set(null));
+        Object.keys(players).forEach(k => {
+          db.ref(`gameSession/players/${k}`).update({
+            lastAnswer: null,
+            submittedAt: null,
+            roundEarnedScore: 0
+          });
+        });
       });
     }
 
@@ -522,8 +532,21 @@
             voteCounts[p.lastAnswer] = (voteCounts[p.lastAnswer] || 0) + 1;
           }
           if (p && p.lastAnswer === correctAns) {
-            const newScore = (p.score || 0) + 1000;
-            db.ref(`gameSession/players/${pid}/score`).set(newScore);
+            // [스피드 점수 계산] 제한시간 20초 기준: 0초에 누르면 1,000점 / 20초 경과 시 최소 500점 보장
+            const qStart = data.questionStartTime || (p.submittedAt ? p.submittedAt - 1000 : Date.now());
+            const submitTime = p.submittedAt || qStart;
+            const elapsedSeconds = Math.max(0, (submitTime - qStart) / 1000);
+            const timeLimit = 20; // 20초 기준
+
+            // 500점(기본) + 남은 시간에 비례한 보너스(최대 500점)
+            const speedRatio = Math.max(0, (timeLimit - elapsedSeconds) / timeLimit);
+            const earnedScore = Math.round(500 + (500 * speedRatio));
+
+            const newScore = (p.score || 0) + earnedScore;
+            db.ref(`gameSession/players/${pid}`).update({
+              score: newScore,
+              roundEarnedScore: earnedScore // 이번 라운드 획득 점수 저장
+            });
             p.score = newScore;
           }
         });
@@ -553,7 +576,17 @@
       const nextBtn = document.getElementById('btn-admin-next-q');
       const title = document.getElementById('admin-rank-title');
 
-      const sorted = Object.values(players || {}).sort((a, b) => (b.score || 0) - (a.score || 0));
+      // 1. 공정한 정렬: 1순위 점수(높은순) -> 2순위 제출 속도(빠른순)
+      const sorted = Object.values(players || {})
+        .filter(p => p && typeof p === 'object' && p.name)
+        .sort((a, b) => {
+          const scoreDiff = (b.score || 0) - (a.score || 0);
+          if (scoreDiff !== 0) return scoreDiff;
+          // 동점인 경우: 더 일찍 제출한 사람 우선 (제출 기록 없으면 후순위)
+          const timeA = a.submittedAt || Infinity;
+          const timeB = b.submittedAt || Infinity;
+          return timeA - timeB;
+        });
 
       if (isLast) {
         title.innerText = "🏆 Final Podium";
@@ -561,7 +594,6 @@
         SoundManager.stop();
         SoundManager.playSfx('celebrate');
         if (typeof confetti === 'function') confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 } });
-
         SoundManager.winTimer = setTimeout(() => SoundManager.playWin(), 7500);
       } else {
         title.innerText = "Current Standings";
@@ -569,22 +601,64 @@
       }
 
       const podiumEl = document.getElementById('admin-podium');
-      podiumEl.innerHTML = '';
-      const [top1, top2, top3] = sorted;
-
-      if (top1) podiumEl.innerHTML += `<div class="podium-column first-place"><div class="podium-avatar">👑</div><div class="podium-name">${top1.name}</div><div class="podium-score">${top1.score || 0} pts</div><div class="podium-pillar">1</div></div>`;
-      if (top2) podiumEl.innerHTML += `<div class="podium-column second-place"><div class="podium-avatar">🥈</div><div class="podium-name">${top2.name}</div><div class="podium-score">${top2.score || 0} pts</div><div class="podium-pillar">2</div></div>`;
-      if (top3) podiumEl.innerHTML += `<div class="podium-column third-place"><div class="podium-avatar">🥉</div><div class="podium-name">${top3.name}</div><div class="podium-score">${top3.score || 0} pts</div><div class="podium-pillar">3</div></div>`;
-
-      const restPlayers = sorted.slice(3);
       const listEl = document.getElementById('admin-leaderboard');
+      podiumEl.innerHTML = '';
+      listEl.innerHTML = '';
+
+      // 참가자가 아예 없는 극단적인 예외 상황
+      if (sorted.length === 0) {
+        podiumEl.innerHTML = `<div class="body-medium" style="padding: 20px; color: var(--md-sys-color-outline);">참가자가 없습니다.</div>`;
+        return;
+      }
+
+      // 2. 포디엄 렌더링 (undefined 방어: 안전 접근 연산자 및 기본값 적용)
+      const top1 = sorted[0];
+      const top2 = sorted[1];
+      const top3 = sorted[2];
+
+      if (top1) {
+        podiumEl.innerHTML += `
+          <div class="podium-column first-place">
+            <div class="podium-avatar">👑</div>
+            <div class="podium-name">${top1.name || '무명'}</div>
+            <div class="podium-score">${(top1.score || 0).toLocaleString()} pts</div>
+            <div class="podium-pillar">1</div>
+          </div>
+        `;
+      }
+      if (top2) {
+        podiumEl.innerHTML += `
+          <div class="podium-column second-place">
+            <div class="podium-avatar">🥈</div>
+            <div class="podium-name">${top2.name || '무명'}</div>
+            <div class="podium-score">${(top2.score || 0).toLocaleString()} pts</div>
+            <div class="podium-pillar">2</div>
+          </div>
+        `;
+      }
+      if (top3) {
+        podiumEl.innerHTML += `
+          <div class="podium-column third-place">
+            <div class="podium-avatar">🥉</div>
+            <div class="podium-name">${top3.name || '무명'}</div>
+            <div class="podium-score">${(top3.score || 0).toLocaleString()} pts</div>
+            <div class="podium-pillar">3</div>
+          </div>
+        `;
+      }
+
+      // 3. 4위 이하 리스트 안전 출력
+      const restPlayers = sorted.slice(3);
       if (restPlayers.length === 0) {
-        listEl.innerHTML = `<div class="body-medium" style="text-align:center; padding: 10px; color:var(--md-sys-color-outline);">모든 순위가 포디엄에 표시되었습니다.</div>`;
+        listEl.innerHTML = `<div class="body-medium" style="text-align:center; padding: 12px; color:var(--md-sys-color-outline);">모든 참가자의 순위가 상단에 표시되었습니다.</div>`;
       } else {
         listEl.innerHTML = restPlayers.map((p, idx) => `
           <div class="leaderboard-row">
-            <div><span style="font-weight:700; width:28px; display:inline-block;">#${idx + 4}</span> <span>${p.name}</span></div>
-            <b>${p.score || 0} pts</b>
+            <div>
+              <span style="font-weight:700; width:28px; display:inline-block;">#${idx + 4}</span>
+              <span>${p.name || '무명'}</span>
+            </div>
+            <b>${(p.score || 0).toLocaleString()} pts</b>
           </div>
         `).join('');
       }

@@ -283,8 +283,8 @@
       { q: "HTML의 올바른 약칭 풀이는 무엇일까요?", choices: ["HyperText Markup Language", "HighText Machine Language", "Hyperlink Text Mode Language", "Home Tool Markup Language"], ans: 0 }
     ];
 
-    let myPlayerId = localStorage.getItem('m3_player_id') || 'p_' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('m3_player_id', myPlayerId);
+    // localStorage 대신 sessionStorage를 사용하여 브라우저 탭마다 독립된 ID를 갖도록 함
+    let myPlayerId = sessionStorage.getItem('m3_player_id');
     let myNickname = '';
     let hasAnsweredCurrentQ = false;
 
@@ -338,6 +338,12 @@
       SoundManager.play('menu');
       myNickname = name;
 
+      // 탭별로 고유한 플레이어 ID 생성 및 저장
+      if (!myPlayerId) {
+        myPlayerId = 'p_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+        sessionStorage.setItem('m3_player_id', myPlayerId);
+      }
+
       db.ref(`gameSession/players/${myPlayerId}`).set({
         name: myNickname,
         score: 0,
@@ -355,7 +361,8 @@
       enableChoices(false);
 
       db.ref(`gameSession/players/${myPlayerId}`).update({
-        lastAnswer: choiceIndex
+        lastAnswer: choiceIndex,
+        submittedAt: Date.now() // 동점자 처리를 위한 제출 시각(타임스탬프)
       });
 
       const hero = document.getElementById('student-hero-banner');
@@ -383,7 +390,9 @@
           if (typeof confetti === 'function') confetti({ particleCount: 70, spread: 60, origin: { y: 0.65 } });
           hero.style.background = 'var(--md-sys-color-success-container)';
           icon.innerText = '🎉';
-          text.innerText = '정답입니다! (+1,000 pts)';
+          
+          const earned = me.roundEarnedScore || 1000;
+          text.innerText = `정답입니다! (+${earned.toLocaleString()} pts)`;
           text.style.color = 'var(--md-sys-color-on-success-container)';
         } else {
           SoundManager.play('wrong');
