@@ -277,12 +277,6 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const quizData = [
-      { q: "대한민국의 수도는 어디일까요?", choices: ["부산광역시", "인천광역시", "서울특별시", "대구광역시"], ans: 2 },
-      { q: "웹 브라우저에서 동적으로 동작하는 표준 프로그래밍 언어는?", choices: ["Python", "JavaScript", "Java", "C++"], ans: 1 },
-      { q: "HTML의 올바른 약칭 풀이는 무엇일까요?", choices: ["HyperText Markup Language", "HighText Machine Language", "Hyperlink Text Mode Language", "Home Tool Markup Language"], ans: 0 }
-    ];
-
     // localStorage 대신 sessionStorage를 사용하여 브라우저 탭마다 독립된 ID를 갖도록 함
     let myPlayerId = sessionStorage.getItem('m3_player_id');
     let myNickname = '';
@@ -308,14 +302,17 @@
         }
         else if (data.state === 'question') {
           const currentIdx = data.currentQIndex || 0;
-          const progressPercent = ((currentIdx + 1) / quizData.length) * 100;
+          const totalQ = data.totalQuestions || 3;
+          const progressPercent = ((currentIdx + 1) / totalQ) * 100;
           document.getElementById('student-progress-bar').style.width = `${progressPercent}%`;
 
-          // 새 문제 시작 시 답변 플래그 리셋
+          // 새 문제 시작 시 답변 플래그 리셋 및 호스트가 전송한 보기 표시
           if (data.reveal === false && !hasAnsweredCurrentQ) {
-            const q = quizData[currentIdx];
-            for (let i = 0; i < 4; i++) {
-              document.getElementById(`student-opt-${i}`).innerText = q.choices[i];
+            const qData = data.currentQuestionData;
+            if (qData && qData.choices) {
+              for (let i = 0; i < 4; i++) {
+                document.getElementById(`student-opt-${i}`).innerText = qData.choices[i] || '';
+              }
             }
             showScreen('student-quiz');
             enableChoices(true);
@@ -323,7 +320,7 @@
         } 
         else if (data.state === 'reveal') {
           showScreen('student-result');
-          checkMyResult(data.currentQIndex || 0);
+          checkMyResult(); // 파라미터 불필요
         }
       });
     }
@@ -374,24 +371,22 @@
       showScreen('student-result');
     }
 
-    function checkMyResult(qIndex) {
-      const correctAns = quizData[qIndex].ans;
+    function checkMyResult() {
       db.ref(`gameSession/players/${myPlayerId}`).once('value', snap => {
         const me = snap.val();
         if (!me) return;
 
-        const myAns = me.lastAnswer;
+        const earned = me.roundEarnedScore || 0;
         const hero = document.getElementById('student-hero-banner');
         const icon = document.getElementById('student-result-icon');
         const text = document.getElementById('student-result-text');
 
-        if (myAns === correctAns) {
+        // 이번 라운드 획득 점수가 0보다 크면 정답
+        if (earned > 0) {
           SoundManager.play('correct');
           if (typeof confetti === 'function') confetti({ particleCount: 70, spread: 60, origin: { y: 0.65 } });
           hero.style.background = 'var(--md-sys-color-success-container)';
           icon.innerText = '🎉';
-          
-          const earned = me.roundEarnedScore || 1000;
           text.innerText = `정답입니다! (+${earned.toLocaleString()} pts)`;
           text.style.color = 'var(--md-sys-color-on-success-container)';
         } else {
@@ -402,7 +397,7 @@
           text.style.color = 'var(--md-sys-color-on-error-container)';
         }
         
-        hasAnsweredCurrentQ = false; // 다음 라운드를 위해 리셋
+        hasAnsweredCurrentQ = false;
         document.getElementById('student-score-info').innerText = `현재 누적 점수: ${(me.score || 0).toLocaleString()} pts`;
       });
     }
