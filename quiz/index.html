@@ -3,63 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Material 3 Quiz Experience</title>
+  <title>Quiz Participant</title>
   
-  <!-- M3 표준 폰트 (Roboto) & 구글 심볼 아이콘 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 
-  <!-- Confetti 효과 라이브러리 -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
-  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
   <style>
-    /* ================= Material 3 Design Tokens (Figma M3 기준) ================= */
     :root {
       --md-sys-color-primary: #6750a4;
       --md-sys-color-on-primary: #ffffff;
       --md-sys-color-primary-container: #eaddff;
       --md-sys-color-on-primary-container: #21005d;
-      
-      --md-sys-color-secondary: #625b71;
       --md-sys-color-secondary-container: #e8def8;
-      --md-sys-color-on-secondary-container: #1d192b;
-
-      --md-sys-color-tertiary: #7d5260;
-      --md-sys-color-tertiary-container: #ffd8e4;
-      --md-sys-color-on-tertiary-container: #31111d;
-
       --md-sys-color-surface: #fffbfe;
-      --md-sys-color-surface-dim: #ded8e1;
-      --md-sys-color-surface-container-lowest: #ffffff;
       --md-sys-color-surface-container-low: #f7f2fa;
       --md-sys-color-surface-container: #f3edf7;
-      --md-sys-color-surface-container-high: #ece6f0;
       --md-sys-color-surface-container-highest: #e6e0e9;
-
       --md-sys-color-on-surface: #1c1b1f;
       --md-sys-color-on-surface-variant: #49454f;
       --md-sys-color-outline: #79747e;
       --md-sys-color-outline-variant: #cac4d0;
-
-      /* 성공/오답 M3 시맨틱 토큰 */
-      --md-sys-color-success: #2e6c43;
       --md-sys-color-success-container: #c4eed0;
       --md-sys-color-on-success-container: #072111;
-
-      --md-sys-color-error: #ba1a1a;
       --md-sys-color-error-container: #ffdad6;
       --md-sys-color-on-error-container: #410002;
-
-      /* M3 표면 그림자 (Elevations) */
       --md-elevation-1: 0 1px 3px 1px rgba(0,0,0,0.08), 0 1px 2px 0 rgba(0,0,0,0.12);
       --md-elevation-2: 0 2px 6px 2px rgba(0,0,0,0.10), 0 1px 2px 0 rgba(0,0,0,0.15);
-      --md-elevation-3: 0 4px 12px 3px rgba(0,0,0,0.12), 0 1px 3px 0 rgba(0,0,0,0.15);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -72,20 +47,16 @@
       align-items: center;
       justify-content: center;
       padding: 20px;
-      overflow-x: hidden;
     }
 
-    /* M3 Container Card */
     .m3-card {
       background: var(--md-sys-color-surface);
       border: 1px solid var(--md-sys-color-outline-variant);
       border-radius: 28px;
       padding: 36px 32px;
       width: 100%;
-      max-width: 580px;
+      max-width: 480px;
       box-shadow: var(--md-elevation-2);
-      position: relative;
-      transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
       animation: scaleIn 0.35s cubic-bezier(0.05, 0.7, 0.1, 1.0);
     }
 
@@ -94,7 +65,6 @@
       to { opacity: 1; transform: scale(1) translateY(0); }
     }
 
-    /* 상단 프로그레스 바 (Linear Progress Indicator) */
     .m3-progress-track {
       width: 100%;
       height: 6px;
@@ -111,19 +81,10 @@
       transition: width 0.4s cubic-bezier(0.2, 0, 0, 1);
     }
 
-    /* 타이포그래피 */
-    .display-small { font-size: 32px; font-weight: 700; line-height: 40px; letter-spacing: -0.5px; }
-    .headline-medium { font-size: 22px; font-weight: 700; line-height: 28px; color: var(--md-sys-color-on-surface); }
-    .title-medium { font-size: 16px; font-weight: 500; line-height: 24px; }
-    .body-medium { font-size: 14px; font-weight: 400; color: var(--md-sys-color-on-surface-variant); line-height: 20px; }
+    .display-small { font-size: 32px; font-weight: 700; line-height: 40px; }
+    .headline-medium { font-size: 20px; font-weight: 700; line-height: 28px; }
+    .body-medium { font-size: 14px; color: var(--md-sys-color-on-surface-variant); line-height: 20px; }
 
-    /* M3 배지 및 헤더 */
-    .header-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
     .badge-pill {
       display: inline-flex;
       align-items: center;
@@ -134,16 +95,10 @@
       border-radius: 12px;
       font-size: 12px;
       font-weight: 700;
-      letter-spacing: 0.3px;
       text-transform: uppercase;
     }
-    .badge-pill .material-symbols-outlined { font-size: 16px; }
 
-    /* 입력 폼 (M3 Outlined Text Field) */
-    .m3-input-wrapper {
-      position: relative;
-      margin: 24px 0 16px 0;
-    }
+    .m3-input-wrapper { margin: 24px 0 16px 0; }
     .m3-text-field {
       width: 100%;
       padding: 16px 18px;
@@ -161,7 +116,6 @@
       box-shadow: 0 0 0 3px var(--md-sys-color-primary-container);
     }
 
-    /* M3 버튼 */
     .m3-btn-filled {
       background-color: var(--md-sys-color-primary);
       color: var(--md-sys-color-on-primary);
@@ -177,59 +131,12 @@
       gap: 8px;
       min-height: 48px;
       box-shadow: var(--md-elevation-1);
-      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
-    }
-    .m3-btn-filled:hover {
-      box-shadow: var(--md-elevation-2);
-      transform: translateY(-1px);
-    }
-    .m3-btn-filled:active {
-      transform: scale(0.98);
-    }
-
-    .m3-btn-tonal {
-      background-color: var(--md-sys-color-secondary-container);
-      color: var(--md-sys-color-on-secondary-container);
-      border: none;
-      border-radius: 20px;
-      padding: 12px 24px;
-      font-size: 15px;
-      font-weight: 500;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      min-height: 48px;
       transition: all 0.2s;
+      width: 100%;
     }
-    .m3-btn-tonal:hover { filter: brightness(0.96); }
+    .m3-btn-filled:hover { box-shadow: var(--md-elevation-2); transform: translateY(-1px); }
+    .m3-btn-filled:active { transform: scale(0.98); }
 
-    /* M3 Chips */
-    .chip-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 18px 0;
-      min-height: 48px;
-    }
-    .m3-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--md-sys-color-surface-container-high);
-      border: 1px solid var(--md-sys-color-outline-variant);
-      border-radius: 12px;
-      padding: 6px 14px;
-      font-size: 14px;
-      font-weight: 500;
-      animation: chipPop 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-    }
-    @keyframes chipPop {
-      0% { transform: scale(0.6); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-
-    /* 보기 카드 (Choice Selection Cards) */
     .choice-group {
       display: flex;
       flex-direction: column;
@@ -237,7 +144,6 @@
       margin: 24px 0;
     }
     .m3-choice-card {
-      position: relative;
       background: var(--md-sys-color-surface-container-low);
       border: 1.5px solid var(--md-sys-color-outline-variant);
       border-radius: 16px;
@@ -247,8 +153,7 @@
       font-size: 16px;
       font-weight: 500;
       cursor: pointer;
-      overflow: hidden;
-      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+      transition: all 0.2s;
       width: 100%;
       text-align: left;
     }
@@ -257,7 +162,6 @@
       border-color: var(--md-sys-color-primary);
       transform: translateX(4px);
     }
-    .m3-choice-card:active { transform: scale(0.99); }
     .m3-choice-card .prefix-circle {
       width: 34px;
       height: 34px;
@@ -271,161 +175,8 @@
       font-weight: 700;
       margin-right: 16px;
       flex-shrink: 0;
-      transition: all 0.2s;
-    }
-    .m3-choice-card:hover .prefix-circle {
-      background: var(--md-sys-color-primary);
-      color: var(--md-sys-color-on-primary);
     }
 
-    /* 정답/오답 하이라이트 (Reveal 모드) */
-    .m3-choice-card.is-correct {
-      background-color: var(--md-sys-color-success-container) !important;
-      border-color: var(--md-sys-color-success) !important;
-      color: var(--md-sys-color-on-success-container);
-    }
-    .m3-choice-card.is-correct .prefix-circle {
-      background-color: var(--md-sys-color-success) !important;
-      color: #ffffff !important;
-    }
-    .m3-choice-card.is-dimmed {
-      opacity: 0.45;
-      filter: grayscale(0.6);
-    }
-
-    /* 투표율/통계 시각화 막대 (정답 공개 시) */
-    .choice-stat-bar {
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      background: rgba(103, 80, 164, 0.12);
-      z-index: 0;
-      transition: width 0.6s cubic-bezier(0.2, 0, 0, 1);
-    }
-    .choice-content {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      width: 100%;
-      justify-content: space-between;
-    }
-
-    /* ========================================================
-       M3 포디엄 (시상대 Top 3 & 1등 스포트라이트)
-    ======================================================== */
-    .podium-container {
-      display: flex;
-      justify-content: center;
-      align-items: flex-end;
-      gap: 12px;
-      margin: 28px 0 24px 0;
-      padding: 10px 0;
-    }
-    .podium-column {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      transition: transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-    }
-    .podium-column.first-place { order: 2; transform: translateY(-8px); }
-    .podium-column.second-place { order: 1; }
-    .podium-column.third-place { order: 3; }
-
-    .podium-avatar {
-      width: 52px;
-      height: 52px;
-      border-radius: 26px;
-      background: var(--md-sys-color-surface-container-highest);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      margin-bottom: 8px;
-      border: 2px solid transparent;
-      box-shadow: var(--md-elevation-1);
-    }
-    .first-place .podium-avatar {
-      width: 64px;
-      height: 64px;
-      border-radius: 32px;
-      background: var(--md-sys-color-primary-container);
-      color: var(--md-sys-color-on-primary-container);
-      border-color: #ffd700;
-      box-shadow: 0 0 16px rgba(255, 215, 0, 0.5);
-    }
-
-    .podium-name {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--md-sys-color-on-surface);
-      margin-bottom: 2px;
-      max-width: 90px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      text-align: center;
-    }
-    .podium-score {
-      font-size: 11px;
-      color: var(--md-sys-color-on-surface-variant);
-      margin-bottom: 8px;
-    }
-
-    .podium-pillar {
-      width: 100%;
-      border-radius: 16px 16px 8px 8px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding-top: 10px;
-      font-weight: 900;
-      font-size: 20px;
-      box-shadow: inset 0 1px 1px rgba(255,255,255,0.7);
-    }
-    .first-place .podium-pillar {
-      height: 120px;
-      background: linear-gradient(180deg, #ffd700 0%, #ffbe0b 100%);
-      color: #432800;
-    }
-    .second-place .podium-pillar {
-      height: 85px;
-      background: linear-gradient(180deg, #e0e0e0 0%, #bdbdbd 100%);
-      color: #37474f;
-    }
-    .third-place .podium-pillar {
-      height: 65px;
-      background: linear-gradient(180deg, #e6b980 0%, #c48b51 100%);
-      color: #3e2723;
-    }
-
-    /* 일반 순위 리스트 */
-    .leaderboard-list {
-      max-height: 200px;
-      overflow-y: auto;
-      border-radius: 14px;
-      background: var(--md-sys-color-surface-container-low);
-      padding: 6px 12px;
-    }
-    .leaderboard-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 6px;
-      border-bottom: 1px solid var(--md-sys-color-outline-variant);
-      font-size: 14px;
-    }
-    .leaderboard-row:last-child { border-bottom: none; }
-    .leaderboard-row .rank-num {
-      width: 28px;
-      font-weight: 700;
-      color: var(--md-sys-color-on-surface-variant);
-    }
-
-    /* 학생 결과 히어로 배너 */
     .status-hero {
       text-align: center;
       padding: 32px 16px;
@@ -433,132 +184,19 @@
       margin: 16px 0;
       background: var(--md-sys-color-surface-container-low);
     }
-    .status-icon {
-      font-size: 56px;
-      margin-bottom: 12px;
-      display: inline-block;
-    }
+    .status-icon { font-size: 56px; margin-bottom: 12px; }
 
     .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
-  <!-- ======================= 교사 (Admin) 대시보드 ======================= -->
-  <div id="admin-view" class="m3-card hidden">
-    <!-- 상단 헤더 & 진행 바 -->
-    <div class="header-bar">
-      <span class="badge-pill"><span class="material-symbols-outlined">shield_person</span> Host Controller</span>
-      <span class="body-medium" id="admin-q-indicator">Lobby</span>
-    </div>
-    <div class="m3-progress-track">
-      <div class="m3-progress-bar" id="admin-progress-bar"></div>
-    </div>
-
-    <!-- 1. 관리자 로비 -->
-    <div id="admin-lobby">
-      <h1 class="display-small" style="margin-bottom: 6px;">Quiz Room</h1>
-      <p class="body-medium">플레이어들이 입장할 때까지 기다린 후 시작하세요.</p>
-      
-      <div style="margin-top: 24px; display: flex; align-items: center; justify-content: space-between;">
-        <span class="title-medium">참가자 목록</span>
-        <span class="badge-pill" id="admin-joined-count">0명 대기 중</span>
-      </div>
-      <div class="chip-container" id="admin-player-list">
-        <span class="body-medium" style="color: var(--md-sys-color-outline); padding: 8px 0;">아직 입장한 참가자가 없습니다.</span>
-      </div>
-
-      <div style="display: flex; gap: 12px; margin-top: 16px;">
-        <button class="m3-btn-filled" style="flex: 1;" onclick="startGame()">
-          <span class="material-symbols-outlined">play_arrow</span> 세션 시작하기
-        </button>
-        <button class="m3-btn-tonal" onclick="resetGame()">
-          <span class="material-symbols-outlined">restart_alt</span> 리셋
-        </button>
-      </div>
-    </div>
-
-    <!-- 2. 문제 진행 화면 -->
-    <div id="admin-quiz" class="hidden">
-      <h2 class="headline-medium" id="admin-question-text" style="margin-bottom: 20px;">문제 타이틀</h2>
-
-      <div class="choice-group">
-        <div class="m3-choice-card" id="admin-choice-card-0">
-          <div class="choice-stat-bar" id="admin-stat-0" style="width: 0%;"></div>
-          <div class="choice-content">
-            <div style="display: flex; align-items: center;">
-              <span class="prefix-circle">A</span><span id="admin-c0">Choice 1</span>
-            </div>
-            <span class="body-medium choice-votes" id="admin-votes-0"></span>
-          </div>
-        </div>
-        <div class="m3-choice-card" id="admin-choice-card-1">
-          <div class="choice-stat-bar" id="admin-stat-1" style="width: 0%;"></div>
-          <div class="choice-content">
-            <div style="display: flex; align-items: center;">
-              <span class="prefix-circle">B</span><span id="admin-c1">Choice 2</span>
-            </div>
-            <span class="body-medium choice-votes" id="admin-votes-1"></span>
-          </div>
-        </div>
-        <div class="m3-choice-card" id="admin-choice-card-2">
-          <div class="choice-stat-bar" id="admin-stat-2" style="width: 0%;"></div>
-          <div class="choice-content">
-            <div style="display: flex; align-items: center;">
-              <span class="prefix-circle">C</span><span id="admin-c2">Choice 3</span>
-            </div>
-            <span class="body-medium choice-votes" id="admin-votes-2"></span>
-          </div>
-        </div>
-        <div class="m3-choice-card" id="admin-choice-card-3">
-          <div class="choice-stat-bar" id="admin-stat-3" style="width: 0%;"></div>
-          <div class="choice-content">
-            <div style="display: flex; align-items: center;">
-              <span class="prefix-circle">D</span><span id="admin-c3">Choice 4</span>
-            </div>
-            <span class="body-medium choice-votes" id="admin-votes-3"></span>
-          </div>
-        </div>
-      </div>
-
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-        <span class="body-medium">실시간 응답 현황</span>
-        <b class="title-medium" style="color: var(--md-sys-color-primary);" id="admin-submitted-count">0명 제출 완료</b>
-      </div>
-
-      <button class="m3-btn-filled" id="btn-next-step" style="width: 100%;" onclick="revealOrNext()">
-        <span class="material-symbols-outlined">visibility</span> 정답 및 결과 공개
-      </button>
-    </div>
-
-    <!-- 3. M3 포디엄 순위표 & 결과 -->
-    <div id="admin-rank" class="hidden">
-      <h2 class="display-small" id="admin-rank-title" style="text-align: center;">Leaderboard</h2>
-
-      <!-- Top 3 포디엄 블록 -->
-      <div class="podium-container" id="admin-podium">
-        <!-- JS로 동적 생성 -->
-      </div>
-
-      <!-- 4위 이하 리스트 -->
-      <div class="leaderboard-list" id="admin-leaderboard"></div>
-
-      <div style="margin-top: 24px;">
-        <button class="m3-btn-filled" id="btn-admin-next-q" style="width: 100%;" onclick="nextQuestion()">
-          다음 문제로 이동 <span class="material-symbols-outlined">arrow_forward</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ======================= 학생 (Student) 화면 ======================= -->
-  <div id="student-view" class="m3-card hidden">
-    <!-- 상단 프로그레스 바 -->
+  <div class="m3-card">
     <div class="m3-progress-track">
       <div class="m3-progress-bar" id="student-progress-bar"></div>
     </div>
 
-    <!-- 1. 입장 로그인 -->
+    <!-- 1. 로그인/입장 화면 -->
     <div id="student-login">
       <span class="badge-pill" style="margin-bottom: 12px;"><span class="material-symbols-outlined">school</span> Participant</span>
       <h1 class="display-small">Quiz Time</h1>
@@ -568,7 +206,7 @@
         <input type="text" id="player-nickname" class="m3-text-field" placeholder="당신의 닉네임" maxlength="12">
       </div>
 
-      <button class="m3-btn-filled" style="width: 100%;" onclick="joinGame()">
+      <button class="m3-btn-filled" onclick="joinGame()">
         퀴즈 참가하기 <span class="material-symbols-outlined">login</span>
       </button>
     </div>
@@ -578,112 +216,55 @@
       <div class="status-hero">
         <div class="status-icon">⏳</div>
         <h2 class="headline-medium">발표자를 기다리는 중</h2>
-        <p class="body-medium" style="margin-top: 8px;">화면을 보며 퀴즈 시작을 준비하세요!</p>
+        <p class="body-medium" style="margin-top: 8px;">진행자가 퀴즈를 시작하면 화면이 전환됩니다.</p>
       </div>
     </div>
 
-    <!-- 3. 선택지 입력 카드 -->
+    <!-- 3. 선택지 입력 화면 -->
     <div id="student-quiz" class="hidden">
       <span class="badge-pill" style="margin-bottom: 10px;">Select One</span>
       <h2 class="headline-medium" id="student-q-title">정답을 선택하세요</h2>
       
       <div class="choice-group">
         <button class="m3-choice-card" onclick="submitAnswer(0)">
-          <div class="choice-content"><span class="prefix-circle">A</span><span id="student-opt-0">선택지 1</span></div>
+          <span class="prefix-circle">A</span><span id="student-opt-0">선택지 1</span>
         </button>
         <button class="m3-choice-card" onclick="submitAnswer(1)">
-          <div class="choice-content"><span class="prefix-circle">B</span><span id="student-opt-1">선택지 2</span></div>
+          <span class="prefix-circle">B</span><span id="student-opt-1">선택지 2</span>
         </button>
         <button class="m3-choice-card" onclick="submitAnswer(2)">
-          <div class="choice-content"><span class="prefix-circle">C</span><span id="student-opt-2">선택지 3</span></div>
+          <span class="prefix-circle">C</span><span id="student-opt-2">선택지 3</span>
         </button>
         <button class="m3-choice-card" onclick="submitAnswer(3)">
-          <div class="choice-content"><span class="prefix-circle">D</span><span id="student-opt-3">선택지 4</span></div>
+          <span class="prefix-circle">D</span><span id="student-opt-3">선택지 4</span>
         </button>
       </div>
     </div>
 
-    <!-- 4. 결과 및 피드백 알림 -->
+    <!-- 4. 결과 및 피드백 화면 -->
     <div id="student-result" class="hidden">
       <div class="status-hero" id="student-hero-banner">
         <div class="status-icon" id="student-result-icon">📨</div>
-        <h2 class="headline-medium" id="student-result-text">답안이 제출되었습니다</h2>
+        <h2 class="headline-medium" id="student-result-text">답안 제출 완료</h2>
         <p class="body-medium" id="student-score-info" style="margin-top: 6px;">진행자의 정답 공개를 기다려주세요.</p>
       </div>
     </div>
   </div>
 
   <script>
-    // ==========================================
-    // =============== 사운드 매니저 =============
-    // ==========================================
     const SoundManager = {
-      bgmLobby: new Audio('대기.mp3'),
-      bgmQuiz: new Audio('문제풀이.mp3'),
-      bgmWin: new Audio('승리.mp3'),
       sfxMenu: new Audio('메뉴.mp3'),
       sfxCorrect: new Audio('정답.mp3'),
       sfxWrong: new Audio('오답.mp3'),
-      sfxCelebrate: new Audio('축하.mp3'),
-      winTimer: null,
-
-      init() {
-        this.bgmLobby.loop = true;
-        this.bgmLobby.volume = 0.35;
-        this.bgmQuiz.loop = true;
-        this.bgmQuiz.volume = 0.4;
-        this.bgmWin.volume = 0.6;
-      },
-
-      playBgmLobby() {
-        this.stopBgm();
-        if (this.bgmLobby.paused) {
-          this.bgmLobby.currentTime = 0;
-          this.bgmLobby.play().catch(e => console.log('Autoplay prevented:', e));
-        }
-      },
-
-      playBgmQuiz() {
-        this.stopBgm();
-        if (this.bgmQuiz.paused) {
-          this.bgmQuiz.play().catch(e => console.log('Autoplay prevented:', e));
-        }
-      },
-
-      playBgmWin() {
-        this.stopBgm();
-        this.bgmWin.currentTime = 0;
-        this.bgmWin.play().catch(e => console.log('Autoplay prevented:', e));
-      },
-
-      stopBgm() {
-        if (this.winTimer) {
-          clearTimeout(this.winTimer);
-          this.winTimer = null;
-        }
-        this.bgmLobby.pause();
-        this.bgmQuiz.pause();
-        this.bgmWin.pause();
-      },
-
-      playSfx(type) {
-        let sound = null;
-        if (type === 'menu') sound = this.sfxMenu;
-        else if (type === 'correct') sound = this.sfxCorrect;
-        else if (type === 'wrong') sound = this.sfxWrong;
-        else if (type === 'celebrate') sound = this.sfxCelebrate;
-
+      play(type) {
+        let sound = this['sfx' + type.charAt(0).toUpperCase() + type.slice(1)];
         if (sound) {
           sound.currentTime = 0;
-          sound.play().catch(e => console.log('SFX play failed:', e));
+          sound.play().catch(() => {});
         }
       }
     };
-    SoundManager.init();
 
-    // ==========================================
-    // =============== Firebase 설정 =============
-    // ==========================================
     const firebaseConfig = {
       apiKey: "AIzaSyBnCJlp6JA4bEl7a8waxnBoJ8rC106URjE",
       authDomain: "tjdwlr1.firebaseapp.com",
@@ -696,333 +277,45 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // 퀴즈 데이터셋
     const quizData = [
-      {
-        q: "대한민국의 수도는 어디일까요?",
-        choices: ["부산광역시", "인천광역시", "서울특별시", "대구광역시"],
-        ans: 2
-      },
-      {
-        q: "웹 브라우저에서 동적으로 동작하는 표준 프로그래밍 언어는?",
-        choices: ["Python", "JavaScript", "Java", "C++"],
-        ans: 1
-      },
-      {
-        q: "HTML의 올바른 약칭 풀이는 무엇일까요?",
-        choices: ["HyperText Markup Language", "HighText Machine Language", "Hyperlink Text Mode Language", "Home Tool Markup Language"],
-        ans: 0
-      }
+      { q: "대한민국의 수도는 어디일까요?", choices: ["부산광역시", "인천광역시", "서울특별시", "대구광역시"], ans: 2 },
+      { q: "웹 브라우저에서 동적으로 동작하는 표준 프로그래밍 언어는?", choices: ["Python", "JavaScript", "Java", "C++"], ans: 1 },
+      { q: "HTML의 올바른 약칭 풀이는 무엇일까요?", choices: ["HyperText Markup Language", "HighText Machine Language", "Hyperlink Text Mode Language", "Home Tool Markup Language"], ans: 0 }
     ];
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const isAdmin = urlParams.get('admin') === 't';
     let myPlayerId = localStorage.getItem('m3_player_id') || 'p_' + Math.random().toString(36).substr(2, 9);
     localStorage.setItem('m3_player_id', myPlayerId);
     let myNickname = '';
+    let hasAnsweredCurrentQ = false;
 
-    // 초기 화면 분기
-    if (isAdmin) {
-      document.getElementById('admin-view').classList.remove('hidden');
-      initAdmin();
-    } else {
-      document.getElementById('student-view').classList.remove('hidden');
-      initStudent();
-    }
-
-    // ==========================================
-    // ============= 교사 (Admin) 로직 ===========
-    // ==========================================
-    // ==========================================
-    // ============= 교사 (Admin) 로직 ===========
-    // ==========================================
-    function initAdmin() {
-      // 첫 클릭 등 사용자 인터랙션 시 자동 재생 제한을 해제하며 대기 BGM 재생
-      const startLobbyBgmOnUserGesture = () => {
-        db.ref('gameSession/state').once('value', snap => {
-          if (!snap.val() || snap.val() === 'lobby') {
-            SoundManager.playBgmLobby();
-          }
-        });
-        window.removeEventListener('click', startLobbyBgmOnUserGesture);
-      };
-      window.addEventListener('click', startLobbyBgmOnUserGesture);
-
-      db.ref('gameSession').on('value', snapshot => {
-        const data = snapshot.val();
-        if (!data) return;
-
-        // 로비 상태로 돌아왔을 때 대기 음악 재생
-        if (data.state === 'lobby') {
-          SoundManager.playBgmLobby();
-        }
-
-        const players = data.players || {};
-        const playerKeys = Object.keys(players);
-        const playerListDiv = document.getElementById('admin-player-list');
-        const countBadge = document.getElementById('admin-joined-count');
-
-        if (playerKeys.length > 0) {
-          countBadge.innerText = `${playerKeys.length}명 대기 중`;
-          playerListDiv.innerHTML = Object.values(players)
-            .map(p => `<span class="m3-chip"><span class="material-symbols-outlined" style="font-size:16px;">account_circle</span>${p.name}</span>`)
-            .join('');
-        } else {
-          countBadge.innerText = `0명 대기 중`;
-          playerListDiv.innerHTML = `<span class="body-medium" style="color: var(--md-sys-color-outline); padding: 8px 0;">아직 입장한 참가자가 없습니다.</span>`;
-        }
-
-        if (data.state === 'question') {
-          const submittedCount = Object.values(players).filter(p => p.lastAnswer !== undefined && p.lastAnswer !== null).length;
-          document.getElementById('admin-submitted-count').innerText = `${submittedCount} / ${playerKeys.length}명 제출 완료`;
-        }
-      });
-    }
-
-    function startGame() {
-      SoundManager.playSfx('menu');
-      db.ref('gameSession').update({
-        state: 'question',
-        currentQIndex: 0,
-        reveal: false
-      });
-      loadAdminQuestion(0);
-    }
-
-    function loadAdminQuestion(idx) {
-      SoundManager.playBgmQuiz();
-
-      const q = quizData[idx];
-      document.getElementById('admin-lobby').classList.add('hidden');
-      document.getElementById('admin-rank').classList.add('hidden');
-      document.getElementById('admin-quiz').classList.remove('hidden');
-
-      // 헤더 및 프로그레스 바 갱신
-      document.getElementById('admin-q-indicator').innerText = `Question ${idx + 1} of ${quizData.length}`;
-      const progressPercent = ((idx + 1) / quizData.length) * 100;
-      document.getElementById('admin-progress-bar').style.width = `${progressPercent}%`;
-
-      document.getElementById('admin-question-text').innerText = `${idx + 1}. ${q.q}`;
-      
-      // 보기 카드 초기화 (통계 바 리셋 & 하이라이트 제거)
-      for (let i = 0; i < 4; i++) {
-        document.getElementById(`admin-c${i}`).innerText = q.choices[i];
-        document.getElementById(`admin-stat-${i}`).style.width = '0%';
-        document.getElementById(`admin-votes-${i}`).innerText = '';
-        const card = document.getElementById(`admin-choice-card-${i}`);
-        card.classList.remove('is-correct', 'is-dimmed');
-      }
-
-      document.getElementById('btn-next-step').innerHTML = `<span class="material-symbols-outlined">visibility</span> 정답 및 결과 공개`;
-      document.getElementById('btn-next-step').disabled = false;
-
-      // 이전 라운드 답변 리셋
-      db.ref('gameSession/players').once('value', snap => {
-        const players = snap.val() || {};
-        Object.keys(players).forEach(k => {
-          db.ref(`gameSession/players/${k}/lastAnswer`).set(null);
-        });
-      });
-    }
-
-    function revealOrNext() {
-      db.ref('gameSession').once('value', snap => {
-        const data = snap.val();
-        if (!data) return;
-
-        const currentIdx = data.currentQIndex || 0;
-        const correctAns = quizData[currentIdx].ans;
-        const players = data.players || {};
-        const totalParticipants = Object.keys(players).length;
-
-        // 투표 통계 계산
-        const voteCounts = [0, 0, 0, 0];
-        Object.keys(players).forEach(pid => {
-          const p = players[pid];
-          if (p && p.lastAnswer !== null && p.lastAnswer !== undefined) {
-            voteCounts[p.lastAnswer] = (voteCounts[p.lastAnswer] || 0) + 1;
-          }
-          // 점수 부여 (정답 시 1000점)
-          if (p && p.lastAnswer === correctAns) {
-            const newScore = (p.score || 0) + 1000;
-            db.ref(`gameSession/players/${pid}/score`).set(newScore);
-            p.score = newScore;
-          }
-        });
-
-        // 1. 교사 화면에 각 선택지 통계 막대 & 정답 하이라이트 표시
-        for (let i = 0; i < 4; i++) {
-          const card = document.getElementById(`admin-choice-card-${i}`);
-          const percent = totalParticipants > 0 ? (voteCounts[i] / totalParticipants) * 100 : 0;
-          document.getElementById(`admin-stat-${i}`).style.width = `${percent}%`;
-          document.getElementById(`admin-votes-${i}`).innerText = `${voteCounts[i]}표 (${Math.round(percent)}%)`;
-
-          if (i === correctAns) {
-            card.classList.add('is-correct');
-          } else {
-            card.classList.add('is-dimmed');
-          }
-        }
-
-        // 학생들에게 결과 상태 전송
-        db.ref('gameSession').update({ reveal: true, state: 'reveal' });
-
-        // 잠시 후 우아하게 순위 화면으로 전환 (결과 확인 시간 2.5초 제공)
-        document.getElementById('btn-next-step').disabled = true;
-        setTimeout(() => {
-          showLeaderboard(players, currentIdx);
-        }, 2400);
-      });
-    }
-
-    function showLeaderboard(players, currentIdx) {
-      document.getElementById('admin-quiz').classList.add('hidden');
-      document.getElementById('admin-rank').classList.remove('hidden');
-
-      const isLastQuestion = currentIdx >= quizData.length - 1;
-      const nextBtn = document.getElementById('btn-admin-next-q');
-      const title = document.getElementById('admin-rank-title');
-
-      const sorted = Object.values(players || {})
-        .filter(p => p && typeof p === 'object')
-        .sort((a, b) => ((b.score || 0) - (a.score || 0)));
-
-      if (isLastQuestion) {
-        title.innerText = "🏆 Final Podium";
-        nextBtn.innerHTML = `세션 종료하기 <span class="material-symbols-outlined">check_circle</span>`;
-        SoundManager.stopBgm();
-        
-        // 1. 축하 효과음과 폭죽을 먼저 실행
-        SoundManager.playSfx('celebrate');
-        triggerM3Confetti();
-
-        // 2. 효과음과 겹치지 않게 7.5초(7~8초 사이) 후 승리 BGM 재생
-        SoundManager.winTimer = setTimeout(() => {
-          SoundManager.playBgmWin();
-        }, 8000);
-      } else {
-        title.innerText = "Current Standings";
-        nextBtn.innerHTML = `다음 문제로 이동 <span class="material-symbols-outlined">arrow_forward</span>`;
-      }
-
-      // --- M3 Top 3 포디엄 렌더링 ---
-      const podiumEl = document.getElementById('admin-podium');
-      podiumEl.innerHTML = '';
-
-      const top1 = sorted[0];
-      const top2 = sorted[1];
-      const top3 = sorted[2];
-
-      if (top1) {
-        podiumEl.innerHTML += `
-          <div class="podium-column first-place">
-            <div class="podium-avatar">👑</div>
-            <div class="podium-name">${top1.name}</div>
-            <div class="podium-score">${top1.score || 0} pts</div>
-            <div class="podium-pillar">1</div>
-          </div>
-        `;
-      }
-      if (top2) {
-        podiumEl.innerHTML += `
-          <div class="podium-column second-place">
-            <div class="podium-avatar">🥈</div>
-            <div class="podium-name">${top2.name}</div>
-            <div class="podium-score">${top2.score || 0} pts</div>
-            <div class="podium-pillar">2</div>
-          </div>
-        `;
-      }
-      if (top3) {
-        podiumEl.innerHTML += `
-          <div class="podium-column third-place">
-            <div class="podium-avatar">🥉</div>
-            <div class="podium-name">${top3.name}</div>
-            <div class="podium-score">${top3.score || 0} pts</div>
-            <div class="podium-pillar">3</div>
-          </div>
-        `;
-      }
-
-      // 4위 이하 렌더링
-      const restPlayers = sorted.slice(3);
-      const listEl = document.getElementById('admin-leaderboard');
-      if (restPlayers.length === 0 && sorted.length <= 3) {
-        listEl.innerHTML = `<div class="body-medium" style="text-align:center; padding: 10px; color:var(--md-sys-color-outline);">모든 순위가 포디엄에 표시되었습니다.</div>`;
-      } else {
-        listEl.innerHTML = restPlayers.map((p, idx) => `
-          <div class="leaderboard-row">
-            <div style="display:flex; align-items:center;">
-              <span class="rank-num">#${idx + 4}</span>
-              <span style="font-weight: 500;">${p.name || 'Anonymous'}</span>
-            </div>
-            <b>${p.score || 0} pts</b>
-          </div>
-        `).join('');
-      }
-    }
-
-    function nextQuestion() {
-      SoundManager.playSfx('menu');
-      db.ref('gameSession').once('value', snap => {
-        const data = snap.val();
-        const nextIdx = (data.currentQIndex || 0) + 1;
-        if (nextIdx < quizData.length) {
-          db.ref('gameSession').update({
-            state: 'question',
-            currentQIndex: nextIdx,
-            reveal: false
-          });
-          loadAdminQuestion(nextIdx);
-        } else {
-          alert('축하합니다! 모든 퀴즈 세션이 종료되었습니다.');
-          resetGame();
-        }
-      });
-    }
-
-    function resetGame() {
-      SoundManager.stopBgm();
-      db.ref('gameSession').set({
-        state: 'lobby',
-        currentQIndex: 0,
-        reveal: false,
-        players: {}
-      }).then(() => {
-        location.reload();
-      });
-    }
-
-    // ==========================================
-    // ============ 학생 (Student) 로직 ===========
-    // ==========================================
     function initStudent() {
       db.ref('gameSession').on('value', snapshot => {
         const data = snapshot.val();
-        if (!data) return;
+        // 아직 닉네임을 입력하고 참가하지 않았다면 화면을 바꾸지 않음
+        if (!data || !myNickname) return;
 
-        if (data.state === 'lobby' && myNickname) {
-          SoundManager.stopBgm();
-          showStudentScreen('student-wait');
-        }
-        if (data.state === 'question') {
-          // 진행도 업데이트
+        if (data.state === 'lobby') {
+          hasAnsweredCurrentQ = false;
+          showScreen('student-wait');
+        } 
+        else if (data.state === 'question') {
           const currentIdx = data.currentQIndex || 0;
           const progressPercent = ((currentIdx + 1) / quizData.length) * 100;
           document.getElementById('student-progress-bar').style.width = `${progressPercent}%`;
 
-          // 선택지 채우기
-          const q = quizData[currentIdx];
-          for (let i = 0; i < 4; i++) {
-            document.getElementById(`student-opt-${i}`).innerText = q.choices[i];
+          // 새 문제 시작 시 답변 플래그 리셋
+          if (data.reveal === false && !hasAnsweredCurrentQ) {
+            const q = quizData[currentIdx];
+            for (let i = 0; i < 4; i++) {
+              document.getElementById(`student-opt-${i}`).innerText = q.choices[i];
+            }
+            showScreen('student-quiz');
+            enableChoices(true);
           }
-
-          showStudentScreen('student-quiz');
-          enableChoices(true);
-        }
-        if (data.state === 'reveal') {
-          showStudentScreen('student-result');
-          checkMyResult(data.currentQIndex);
+        } 
+        else if (data.state === 'reveal') {
+          showScreen('student-result');
+          checkMyResult(data.currentQIndex || 0);
         }
       });
     }
@@ -1034,7 +327,7 @@
         input.focus();
         return;
       }
-      SoundManager.playSfx('menu');
+      SoundManager.play('menu');
       myNickname = name;
 
       db.ref(`gameSession/players/${myPlayerId}`).set({
@@ -1043,11 +336,14 @@
         lastAnswer: null
       });
 
-      showStudentScreen('student-wait');
+      // 참가 완료 후 대기 화면으로 진입 및 리스너 활성화
+      showScreen('student-wait');
+      initStudent();
     }
 
     function submitAnswer(choiceIndex) {
-      SoundManager.playSfx('menu');
+      SoundManager.play('menu');
+      hasAnsweredCurrentQ = true;
       enableChoices(false);
 
       db.ref(`gameSession/players/${myPlayerId}`).update({
@@ -1060,7 +356,7 @@
       document.getElementById('student-result-text').innerText = '답안 제출 완료!';
       document.getElementById('student-result-text').style.color = 'var(--md-sys-color-on-surface)';
       document.getElementById('student-score-info').innerText = '진행자가 결과를 공개할 때까지 잠시 대기하세요.';
-      showStudentScreen('student-result');
+      showScreen('student-result');
     }
 
     function checkMyResult(qIndex) {
@@ -1075,26 +371,26 @@
         const text = document.getElementById('student-result-text');
 
         if (myAns === correctAns) {
-          SoundManager.playSfx('correct');
-          triggerM3Confetti();
+          SoundManager.play('correct');
+          if (typeof confetti === 'function') confetti({ particleCount: 70, spread: 60, origin: { y: 0.65 } });
           hero.style.background = 'var(--md-sys-color-success-container)';
           icon.innerText = '🎉';
           text.innerText = '정답입니다! (+1,000 pts)';
           text.style.color = 'var(--md-sys-color-on-success-container)';
         } else {
-          SoundManager.playSfx('wrong');
+          SoundManager.play('wrong');
           hero.style.background = 'var(--md-sys-color-error-container)';
           icon.innerText = '💔';
           text.innerText = '아쉽지만 오답입니다';
           text.style.color = 'var(--md-sys-color-on-error-container)';
         }
         
-        const currentScore = me.score || 0;
-        document.getElementById('student-score-info').innerText = `현재 누적 점수: ${currentScore.toLocaleString()} pts`;
+        hasAnsweredCurrentQ = false; // 다음 라운드를 위해 리셋
+        document.getElementById('student-score-info').innerText = `현재 누적 점수: ${(me.score || 0).toLocaleString()} pts`;
       });
     }
 
-    function showStudentScreen(screenId) {
+    function showScreen(screenId) {
       ['student-login', 'student-wait', 'student-quiz', 'student-result'].forEach(id => {
         document.getElementById(id).classList.add('hidden');
       });
@@ -1107,18 +403,6 @@
         btn.style.pointerEvents = enable ? 'auto' : 'none';
         btn.style.opacity = enable ? '1' : '0.6';
       });
-    }
-
-    // Material 3 톤 맞춤 Confetti 함수
-    function triggerM3Confetti() {
-      if (typeof confetti === 'function') {
-        confetti({
-          particleCount: 70,
-          spread: 70,
-          origin: { y: 0.65 },
-          colors: ['#6750a4', '#ffd700', '#7d5260', '#2e6c43', '#eaddff']
-        });
-      }
     }
   </script>
 </body>
