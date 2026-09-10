@@ -607,12 +607,16 @@
     function resetGame() {
       SoundManager.stop();
       SoundManager.bgmQuiz.currentTime = 0;
+      
+      // players를 완전히 null로 지워 찌꺼기 데이터가 남지 않도록 함
       db.ref('gameSession').set({
         state: 'lobby',
         currentQIndex: 0,
         reveal: false,
-        players: {}
-      }).then(() => location.reload());
+        players: null
+      }).then(() => {
+        location.reload();
+      });
     }
   </script>
 </body>

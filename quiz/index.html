@@ -295,9 +295,17 @@
         if (!data || !myNickname) return;
 
         if (data.state === 'lobby') {
+          // 호스트가 게임을 리셋했거나 방에 내 정보가 없으면 로그인 화면으로 완전 초기화
+          if (!data.players || !data.players[myPlayerId]) {
+            myNickname = '';
+            hasAnsweredCurrentQ = false;
+            document.getElementById('player-nickname').value = '';
+            showScreen('student-login');
+            return;
+          }
           hasAnsweredCurrentQ = false;
           showScreen('student-wait');
-        } 
+        }
         else if (data.state === 'question') {
           const currentIdx = data.currentQIndex || 0;
           const progressPercent = ((currentIdx + 1) / quizData.length) * 100;
@@ -404,6 +412,13 @@
         btn.style.opacity = enable ? '1' : '0.6';
       });
     }
+
+    // 창을 닫거나 새로고침할 때 유령 플레이어로 남지 않도록 자동 삭제 예약
+    window.addEventListener('beforeunload', () => {
+      if (myPlayerId) {
+        db.ref(`gameSession/players/${myPlayerId}`).remove();
+      }
+    });
   </script>
 </body>
 </html>
