@@ -222,7 +222,13 @@
 
     <!-- 3. 선택지 입력 화면 -->
     <div id="student-quiz" class="hidden">
-      <span class="badge-pill" style="margin-bottom: 10px;">Select One</span>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <span class="badge-pill">Select One</span>
+        <span class="badge-pill" style="background-color: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container);">
+          <span class="material-symbols-outlined" style="font-size: 16px;">timer</span>
+          <span id="student-timer-text">15s</span>
+        </span>
+      </div>
       <h2 class="headline-medium" id="student-q-title">정답을 선택하세요</h2>
       
       <div class="choice-group">
@@ -281,6 +287,15 @@
     let myPlayerId = sessionStorage.getItem('m3_player_id');
     let myNickname = '';
     let hasAnsweredCurrentQ = false;
+    let studentCountdown = null;
+
+    // 참가 후 실수로 탭 닫기/새로고침 방지
+    window.addEventListener('beforeunload', (e) => {
+      if (myNickname) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
 
     function initStudent() {
       db.ref('gameSession').on('value', snapshot => {
@@ -322,9 +337,32 @@
             }
             showScreen('student-quiz');
             enableChoices(true);
+
+            // 호스트의 문제 출제 시각 기준 남은 시간 계산 및 타이머 시작
+            if (studentCountdown) clearInterval(studentCountdown);
+            const timeLimit = data.timeLimit || 15;
+            const qStart = data.questionStartTime || Date.now();
+            const timerEl = document.getElementById('student-timer-text');
+
+            const updateTimer = () => {
+              const elapsed = Math.floor((Date.now() - qStart) / 1000);
+              const remaining = Math.max(0, timeLimit - elapsed);
+              timerEl.innerText = `${remaining}s`;
+
+              if (remaining <= 0) {
+                clearInterval(studentCountdown);
+                // 시간 초과 시 선택지 잠금
+                if (!hasAnsweredCurrentQ) {
+                  enableChoices(false);
+                }
+              }
+            };
+            updateTimer();
+            studentCountdown = setInterval(updateTimer, 500);
           }
         } 
         else if (data.state === 'reveal') {
+          if (studentCountdown) clearInterval(studentCountdown);
           showScreen('student-result');
           checkMyResult(); // 파라미터 불필요
         }

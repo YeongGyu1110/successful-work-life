@@ -302,6 +302,14 @@
       <div class="m3-progress-bar" id="admin-progress-bar"></div>
     </div>
 
+    <!-- 타이머 뱃지 -->
+    <div id="admin-timer-badge" class="hidden" style="text-align: right; margin-bottom: 12px;">
+      <span class="badge-pill" style="background-color: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); font-size: 14px; padding: 6px 16px;">
+        <span class="material-symbols-outlined" style="font-size: 18px;">timer</span>
+        <span id="admin-timer-text">15s</span>
+      </span>
+    </div>
+
     <!-- 1. 호스트 대기 로비 -->
     <div id="admin-lobby">
       <h1 class="display-small" style="margin-bottom: 6px;">Quiz Room</h1>
@@ -434,6 +442,17 @@
     const db = firebase.database();
 
     let quizData = [];
+    let isGameRunning = false; // 게임 진행 중 이탈 방지용 플래그
+    let countdownInterval = null; // 타이머 인터벌 변수
+    const QUESTION_TIME_LIMIT = 15; // 제한 시간 15초
+
+    // [이탈 방지 경고] 게임 진행 중 실수로 탭 닫기/새로고침 방지
+    window.addEventListener('beforeunload', (e) => {
+      if (isGameRunning) {
+        e.preventDefault();
+        e.returnValue = ''; // 표준 브라우저 이탈 경고 팝업 활성화
+      }
+    });
 
     // quiz.json 비동기 로드
     fetch('quiz.json')
@@ -480,6 +499,7 @@
         alert("퀴즈 데이터를 아직 불러오는 중이거나 파일이 비어 있습니다.");
         return;
       }
+      isGameRunning = true; // 게임 시작 시 이탈 방지 활성화
       SoundManager.playSfx('menu');
       db.ref('gameSession').update({ state: 'question', currentQIndex: 0, reveal: false });
       loadAdminQuestion(0);
@@ -506,16 +526,35 @@
 
       document.getElementById('btn-next-step').disabled = false;
 
-      // 문제 출제 시각 및 학생용 선택지(정답 ans 제외)를 DB에 전송
+      /// 문제 출제 시각, 제한 시간, 학생용 선택지를 DB에 전송
       const qStartTime = Date.now();
       db.ref('gameSession').update({
         questionStartTime: qStartTime,
+        timeLimit: QUESTION_TIME_LIMIT,
         totalQuestions: quizData.length,
         currentQuestionData: {
           q: q.q,
           choices: q.choices
         }
       });
+
+      // 호스트 15초 타이머 시작
+      if (countdownInterval) clearInterval(countdownInterval);
+      const timerBadge = document.getElementById('admin-timer-badge');
+      const timerText = document.getElementById('admin-timer-text');
+      timerBadge.classList.remove('hidden');
+
+      let remaining = QUESTION_TIME_LIMIT;
+      timerText.innerText = `${remaining}s`;
+
+      countdownInterval = setInterval(() => {
+        remaining--;
+        timerText.innerText = `${remaining}s`;
+        if (remaining <= 0) {
+          clearInterval(countdownInterval);
+          revealOrNext(); // 0초가 되면 자동으로 정답 공개 및 마감
+        }
+      }, 1000);
 
       // 이전 라운드 플레이어 응답값 초기화
       db.ref('gameSession/players').once('value', snap => {
@@ -531,6 +570,10 @@
     }
 
     function revealOrNext() {
+      // 타이머 즉시 정지 및 뱃지 숨김
+      if (countdownInterval) clearInterval(countdownInterval);
+      document.getElementById('admin-timer-badge').classList.add('hidden');
+
       db.ref('gameSession').once('value', snap => {
         const data = snap.val();
         if (!data) return;
@@ -547,11 +590,11 @@
             voteCounts[p.lastAnswer] = (voteCounts[p.lastAnswer] || 0) + 1;
           }
           if (p && p.lastAnswer === correctAns) {
-            // [스피드 점수 계산] 제한시간 20초 기준: 0초에 누르면 1,000점 / 20초 경과 시 최소 500점 보장
+            // [스피드 점수 계산] 15초 제한시간 기준: 0초에 누르면 1,000점 / 15초 경과 시 최소 500점 보장
             const qStart = data.questionStartTime || (p.submittedAt ? p.submittedAt - 1000 : Date.now());
             const submitTime = p.submittedAt || qStart;
             const elapsedSeconds = Math.max(0, (submitTime - qStart) / 1000);
-            const timeLimit = 20; // 20초 기준
+            const timeLimit = QUESTION_TIME_LIMIT; // 15초 기준
 
             // 500점(기본) + 남은 시간에 비례한 보너스(최대 500점)
             const speedRatio = Math.max(0, (timeLimit - elapsedSeconds) / timeLimit);
@@ -694,6 +737,8 @@
     }
 
     function resetGame() {
+      isGameRunning = false; // 리셋 시 경고창 없이 새로고침되도록 해제
+      if (countdownInterval) clearInterval(countdownInterval);
       SoundManager.stop();
       SoundManager.bgmQuiz.currentTime = 0;
       
