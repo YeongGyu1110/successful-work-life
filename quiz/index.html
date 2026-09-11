@@ -187,6 +187,44 @@
     .status-icon { font-size: 56px; margin-bottom: 12px; }
 
     .hidden { display: none !important; }
+
+    /* 긴급 경고 효과: 화면 전체 붉은 사이렌 필터 & 강렬한 진동 */
+    body.time-warning::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle, rgba(255, 0, 0, 0.15) 0%, rgba(200, 0, 0, 0.45) 100%);
+      pointer-events: none; /* 클릭 방해 금지 */
+      z-index: 999;
+      animation: sirenPulse 0.45s infinite alternate ease-in-out;
+    }
+
+    .m3-card.shake-warning {
+      animation: intenseShake 0.18s infinite ease-in-out;
+      border: 2px solid #ba1a1a !important;
+      box-shadow: 0 0 30px rgba(220, 0, 0, 0.6), inset 0 0 15px rgba(220, 0, 0, 0.1) !important;
+    }
+
+    /* 보기 카드들까지 붉은 위기감 전파 */
+    .shake-warning .m3-choice-card {
+      border-color: rgba(186, 26, 26, 0.5);
+      background-color: rgba(255, 218, 214, 0.35);
+    }
+
+    @keyframes sirenPulse {
+      0% { opacity: 0.3; }
+      100% { opacity: 0.9; }
+    }
+
+    @keyframes intenseShake {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(-4px, 2px) rotate(-0.8deg); }
+      40% { transform: translate(4px, -2px) rotate(0.8deg); }
+      60% { transform: translate(-3px, -2px) rotate(-0.5deg); }
+      80% { transform: translate(3px, 2px) rotate(0.5deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+  </style>
   </style>
 </head>
 <body>
@@ -226,7 +264,7 @@
         <span class="badge-pill">Select One</span>
         <span class="badge-pill" style="background-color: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container);">
           <span class="material-symbols-outlined" style="font-size: 16px;">timer</span>
-          <span id="student-timer-text">15s</span>
+          <span id="student-timer-text">8s</span>
         </span>
       </div>
       <h2 class="headline-medium" id="student-q-title">정답을 선택하세요</h2>
@@ -340,17 +378,33 @@
 
             // 호스트의 문제 출제 시각 기준 남은 시간 계산 및 타이머 시작
             if (studentCountdown) clearInterval(studentCountdown);
-            const timeLimit = data.timeLimit || 15;
+            const timeLimit = data.timeLimit || 8;
             const qStart = data.questionStartTime || Date.now();
             const timerEl = document.getElementById('student-timer-text');
+            const cardEl = document.querySelector('.m3-card');
+
+            // 경고 효과 초기화
+            document.body.classList.remove('time-warning');
+            cardEl.classList.remove('shake-warning');
 
             const updateTimer = () => {
               const elapsed = Math.floor((Date.now() - qStart) / 1000);
               const remaining = Math.max(0, timeLimit - elapsed);
               timerEl.innerText = `${remaining}s`;
 
+              // 3초 이하이고 아직 답을 안 골랐을 때 경고 발동
+              if (remaining <= 3 && remaining > 0 && !hasAnsweredCurrentQ) {
+                document.body.classList.add('time-warning');
+                cardEl.classList.add('shake-warning');
+              } else {
+                document.body.classList.remove('time-warning');
+                cardEl.classList.remove('shake-warning');
+              }
+
               if (remaining <= 0) {
                 clearInterval(studentCountdown);
+                document.body.classList.remove('time-warning');
+                cardEl.classList.remove('shake-warning');
                 // 시간 초과 시 선택지 잠금
                 if (!hasAnsweredCurrentQ) {
                   enableChoices(false);
@@ -363,6 +417,8 @@
         } 
         else if (data.state === 'reveal') {
           if (studentCountdown) clearInterval(studentCountdown);
+          document.body.classList.remove('time-warning');
+          document.querySelector('.m3-card').classList.remove('shake-warning');
           showScreen('student-result');
           checkMyResult(); // 파라미터 불필요
         }
@@ -401,6 +457,10 @@
       hasAnsweredCurrentQ = true;
       enableChoices(false);
 
+      // 답안 제출 시 경고 애니메이션 즉시 해제
+      document.body.classList.remove('time-warning');
+      document.querySelector('.m3-card').classList.remove('shake-warning');
+
       db.ref(`gameSession/players/${myPlayerId}`).update({
         lastAnswer: choiceIndex,
         submittedAt: Date.now() // 동점자 처리를 위한 제출 시각(타임스탬프)
@@ -425,15 +485,27 @@
         const icon = document.getElementById('student-result-icon');
         const text = document.getElementById('student-result-text');
 
-        // 이번 라운드 획득 점수가 0보다 크면 정답
-        if (earned > 0) {
+        const myAns = me.lastAnswer;
+
+        // 1. 시간 초과로 답안을 제출하지 못한 경우 (전용 화면)
+        if (myAns === null || myAns === undefined) {
+          SoundManager.play('wrong');
+          hero.style.background = 'var(--md-sys-color-surface-container-highest)';
+          icon.innerText = '⏰';
+          text.innerText = '시간 초과!';
+          text.style.color = 'var(--md-sys-color-on-surface)';
+        }
+        // 2. 정답을 맞힌 경우
+        else if (earned > 0) {
           SoundManager.play('correct');
           if (typeof confetti === 'function') confetti({ particleCount: 70, spread: 60, origin: { y: 0.65 } });
           hero.style.background = 'var(--md-sys-color-success-container)';
           icon.innerText = '🎉';
           text.innerText = `정답입니다! (+${earned.toLocaleString()} pts)`;
           text.style.color = 'var(--md-sys-color-on-success-container)';
-        } else {
+        } 
+        // 3. 답을 골랐으나 틀린 경우
+        else {
           SoundManager.play('wrong');
           hero.style.background = 'var(--md-sys-color-error-container)';
           icon.innerText = '💔';
