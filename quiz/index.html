@@ -187,6 +187,44 @@
     .status-icon { font-size: 56px; margin-bottom: 12px; }
 
     .hidden { display: none !important; }
+
+    /* 긴급 경고 효과: 화면 전체 붉은 사이렌 필터 & 강렬한 진동 */
+    body.time-warning::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle, rgba(255, 0, 0, 0.15) 0%, rgba(200, 0, 0, 0.45) 100%);
+      pointer-events: none; /* 클릭 방해 금지 */
+      z-index: 999;
+      animation: sirenPulse 0.45s infinite alternate ease-in-out;
+    }
+
+    .m3-card.shake-warning {
+      animation: intenseShake 0.18s infinite ease-in-out;
+      border: 2px solid #ba1a1a !important;
+      box-shadow: 0 0 30px rgba(220, 0, 0, 0.6), inset 0 0 15px rgba(220, 0, 0, 0.1) !important;
+    }
+
+    /* 보기 카드들까지 붉은 위기감 전파 */
+    .shake-warning .m3-choice-card {
+      border-color: rgba(186, 26, 26, 0.5);
+      background-color: rgba(255, 218, 214, 0.35);
+    }
+
+    @keyframes sirenPulse {
+      0% { opacity: 0.3; }
+      100% { opacity: 0.9; }
+    }
+
+    @keyframes intenseShake {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(-4px, 2px) rotate(-0.8deg); }
+      40% { transform: translate(4px, -2px) rotate(0.8deg); }
+      60% { transform: translate(-3px, -2px) rotate(-0.5deg); }
+      80% { transform: translate(3px, 2px) rotate(0.5deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+  </style>
   </style>
 </head>
 <body>
@@ -222,7 +260,13 @@
 
     <!-- 3. 선택지 입력 화면 -->
     <div id="student-quiz" class="hidden">
-      <span class="badge-pill" style="margin-bottom: 10px;">Select One</span>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <span class="badge-pill">Select One</span>
+        <span class="badge-pill" style="background-color: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container);">
+          <span class="material-symbols-outlined" style="font-size: 16px;">timer</span>
+          <span id="student-timer-text">8s</span>
+        </span>
+      </div>
       <h2 class="headline-medium" id="student-q-title">정답을 선택하세요</h2>
       
       <div class="choice-group">
@@ -277,16 +321,19 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const quizData = [
-      { q: "대한민국의 수도는 어디일까요?", choices: ["부산광역시", "인천광역시", "서울특별시", "대구광역시"], ans: 2 },
-      { q: "웹 브라우저에서 동적으로 동작하는 표준 프로그래밍 언어는?", choices: ["Python", "JavaScript", "Java", "C++"], ans: 1 },
-      { q: "HTML의 올바른 약칭 풀이는 무엇일까요?", choices: ["HyperText Markup Language", "HighText Machine Language", "Hyperlink Text Mode Language", "Home Tool Markup Language"], ans: 0 }
-    ];
-
-    let myPlayerId = localStorage.getItem('m3_player_id') || 'p_' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('m3_player_id', myPlayerId);
+    // localStorage 대신 sessionStorage를 사용하여 브라우저 탭마다 독립된 ID를 갖도록 함
+    let myPlayerId = sessionStorage.getItem('m3_player_id');
     let myNickname = '';
     let hasAnsweredCurrentQ = false;
+    let studentCountdown = null;
+
+    // 참가 후 실수로 탭 닫기/새로고침 방지
+    window.addEventListener('beforeunload', (e) => {
+      if (myNickname) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
 
     function initStudent() {
       db.ref('gameSession').on('value', snapshot => {
@@ -295,27 +342,85 @@
         if (!data || !myNickname) return;
 
         if (data.state === 'lobby') {
+          // 호스트가 게임을 리셋했거나 방에 내 정보가 없으면 로그인 화면으로 완전 초기화
+          if (!data.players || !data.players[myPlayerId]) {
+            myNickname = '';
+            hasAnsweredCurrentQ = false;
+            document.getElementById('player-nickname').value = '';
+            showScreen('student-login');
+            return;
+          }
           hasAnsweredCurrentQ = false;
           showScreen('student-wait');
-        } 
+        }
         else if (data.state === 'question') {
           const currentIdx = data.currentQIndex || 0;
-          const progressPercent = ((currentIdx + 1) / quizData.length) * 100;
+          const totalQ = data.totalQuestions || 3;
+          const progressPercent = ((currentIdx + 1) / totalQ) * 100;
           document.getElementById('student-progress-bar').style.width = `${progressPercent}%`;
 
-          // 새 문제 시작 시 답변 플래그 리셋
+          // 새 문제 시작 시 답변 플래그 리셋 및 호스트가 전송한 질문/보기 표시
           if (data.reveal === false && !hasAnsweredCurrentQ) {
-            const q = quizData[currentIdx];
-            for (let i = 0; i < 4; i++) {
-              document.getElementById(`student-opt-${i}`).innerText = q.choices[i];
+            const qData = data.currentQuestionData;
+            if (qData) {
+              // 1. 질문 문항 텍스트 반영 (예: "Q1. 대한민국의 수도는 어디일까요?")
+              document.getElementById('student-q-title').innerText = `Q${currentIdx + 1}. ${qData.q || ''}`;
+
+              // 2. 보기 텍스트 반영
+              if (qData.choices) {
+                for (let i = 0; i < 4; i++) {
+                  document.getElementById(`student-opt-${i}`).innerText = qData.choices[i] || '';
+                }
+              }
             }
             showScreen('student-quiz');
             enableChoices(true);
+
+            // 호스트의 문제 출제 시각 기준 남은 시간 계산 및 타이머 시작
+            if (studentCountdown) clearInterval(studentCountdown);
+            const timeLimit = data.timeLimit || 8;
+            const qStart = data.questionStartTime || Date.now();
+            const timerEl = document.getElementById('student-timer-text');
+            const cardEl = document.querySelector('.m3-card');
+
+            // 경고 효과 초기화
+            document.body.classList.remove('time-warning');
+            cardEl.classList.remove('shake-warning');
+
+            const updateTimer = () => {
+              const elapsed = Math.floor((Date.now() - qStart) / 1000);
+              const remaining = Math.max(0, timeLimit - elapsed);
+              timerEl.innerText = `${remaining}s`;
+
+              // 3초 이하이고 아직 답을 안 골랐을 때 경고 발동
+              if (remaining <= 3 && remaining > 0 && !hasAnsweredCurrentQ) {
+                document.body.classList.add('time-warning');
+                cardEl.classList.add('shake-warning');
+              } else {
+                document.body.classList.remove('time-warning');
+                cardEl.classList.remove('shake-warning');
+              }
+
+              if (remaining <= 0) {
+                clearInterval(studentCountdown);
+                document.body.classList.remove('time-warning');
+                cardEl.classList.remove('shake-warning');
+                // 시간 초과 시 선택지 잠금
+                if (!hasAnsweredCurrentQ) {
+                  enableChoices(false);
+                }
+              }
+            };
+            updateTimer();
+            studentCountdown = setInterval(updateTimer, 500);
           }
         } 
         else if (data.state === 'reveal') {
+          if (studentCountdown) clearInterval(studentCountdown);
+          document.body.classList.remove('time-warning');
+          document.querySelector('.m3-card').classList.remove('shake-warning');
           showScreen('student-result');
-          checkMyResult(data.currentQIndex || 0);
+          checkMyResult(); // 파라미터 불필요
         }
       });
     }
@@ -329,6 +434,12 @@
       }
       SoundManager.play('menu');
       myNickname = name;
+
+      // 탭별로 고유한 플레이어 ID 생성 및 저장
+      if (!myPlayerId) {
+        myPlayerId = 'p_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+        sessionStorage.setItem('m3_player_id', myPlayerId);
+      }
 
       db.ref(`gameSession/players/${myPlayerId}`).set({
         name: myNickname,
@@ -346,8 +457,13 @@
       hasAnsweredCurrentQ = true;
       enableChoices(false);
 
+      // 답안 제출 시 경고 애니메이션 즉시 해제
+      document.body.classList.remove('time-warning');
+      document.querySelector('.m3-card').classList.remove('shake-warning');
+
       db.ref(`gameSession/players/${myPlayerId}`).update({
-        lastAnswer: choiceIndex
+        lastAnswer: choiceIndex,
+        submittedAt: Date.now() // 동점자 처리를 위한 제출 시각(타임스탬프)
       });
 
       const hero = document.getElementById('student-hero-banner');
@@ -359,25 +475,37 @@
       showScreen('student-result');
     }
 
-    function checkMyResult(qIndex) {
-      const correctAns = quizData[qIndex].ans;
+    function checkMyResult() {
       db.ref(`gameSession/players/${myPlayerId}`).once('value', snap => {
         const me = snap.val();
         if (!me) return;
 
-        const myAns = me.lastAnswer;
+        const earned = me.roundEarnedScore || 0;
         const hero = document.getElementById('student-hero-banner');
         const icon = document.getElementById('student-result-icon');
         const text = document.getElementById('student-result-text');
 
-        if (myAns === correctAns) {
+        const myAns = me.lastAnswer;
+
+        // 1. 시간 초과로 답안을 제출하지 못한 경우 (전용 화면)
+        if (myAns === null || myAns === undefined) {
+          SoundManager.play('wrong');
+          hero.style.background = 'var(--md-sys-color-surface-container-highest)';
+          icon.innerText = '⏰';
+          text.innerText = '시간 초과!';
+          text.style.color = 'var(--md-sys-color-on-surface)';
+        }
+        // 2. 정답을 맞힌 경우
+        else if (earned > 0) {
           SoundManager.play('correct');
           if (typeof confetti === 'function') confetti({ particleCount: 70, spread: 60, origin: { y: 0.65 } });
           hero.style.background = 'var(--md-sys-color-success-container)';
           icon.innerText = '🎉';
-          text.innerText = '정답입니다! (+1,000 pts)';
+          text.innerText = `정답입니다! (+${earned.toLocaleString()} pts)`;
           text.style.color = 'var(--md-sys-color-on-success-container)';
-        } else {
+        } 
+        // 3. 답을 골랐으나 틀린 경우
+        else {
           SoundManager.play('wrong');
           hero.style.background = 'var(--md-sys-color-error-container)';
           icon.innerText = '💔';
@@ -385,7 +513,7 @@
           text.style.color = 'var(--md-sys-color-on-error-container)';
         }
         
-        hasAnsweredCurrentQ = false; // 다음 라운드를 위해 리셋
+        hasAnsweredCurrentQ = false;
         document.getElementById('student-score-info').innerText = `현재 누적 점수: ${(me.score || 0).toLocaleString()} pts`;
       });
     }
@@ -404,6 +532,13 @@
         btn.style.opacity = enable ? '1' : '0.6';
       });
     }
+
+    // 창을 닫거나 새로고침할 때 유령 플레이어로 남지 않도록 자동 삭제 예약
+    window.addEventListener('beforeunload', () => {
+      if (myPlayerId) {
+        db.ref(`gameSession/players/${myPlayerId}`).remove();
+      }
+    });
   </script>
 </body>
 </html>

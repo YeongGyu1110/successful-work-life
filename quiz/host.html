@@ -289,6 +289,44 @@
     .leaderboard-row:last-child { border-bottom: none; }
 
     .hidden { display: none !important; }
+
+    /* 호스트 경고 효과: 화면 전체 붉은 사이렌 필터 & 강렬한 진동 */
+    body.time-warning::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle, rgba(255, 0, 0, 0.15) 0%, rgba(200, 0, 0, 0.45) 100%);
+      pointer-events: none; /* 클릭 방해 금지 */
+      z-index: 999;
+      animation: sirenPulse 0.45s infinite alternate ease-in-out;
+    }
+
+    .m3-card.shake-warning {
+      animation: intenseShake 0.18s infinite ease-in-out;
+      border: 2px solid #ba1a1a !important;
+      box-shadow: 0 0 35px rgba(220, 0, 0, 0.6), inset 0 0 15px rgba(220, 0, 0, 0.1) !important;
+    }
+
+    /* 보기 카드들까지 붉은 위기감 전파 */
+    .shake-warning .m3-choice-card {
+      border-color: rgba(186, 26, 26, 0.5);
+      background-color: rgba(255, 218, 214, 0.35);
+    }
+
+    @keyframes sirenPulse {
+      0% { opacity: 0.3; }
+      100% { opacity: 0.9; }
+    }
+
+    @keyframes intenseShake {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(-4px, 2px) rotate(-0.8deg); }
+      40% { transform: translate(4px, -2px) rotate(0.8deg); }
+      60% { transform: translate(-3px, -2px) rotate(-0.5deg); }
+      80% { transform: translate(3px, 2px) rotate(0.5deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+  </style>
   </style>
 </head>
 <body>
@@ -300,6 +338,14 @@
     </div>
     <div class="m3-progress-track">
       <div class="m3-progress-bar" id="admin-progress-bar"></div>
+    </div>
+
+    <!-- 타이머 뱃지 -->
+    <div id="admin-timer-badge" class="hidden" style="text-align: right; margin-bottom: 12px;">
+      <span class="badge-pill" style="background-color: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); font-size: 14px; padding: 6px 16px;">
+        <span class="material-symbols-outlined" style="font-size: 18px;">timer</span>
+        <span id="admin-timer-text">15s</span>
+      </span>
     </div>
 
     <!-- 1. 호스트 대기 로비 -->
@@ -400,7 +446,15 @@
         this.bgmWin.volume = 0.6;
       },
       playLobby() { this.stop(); this.bgmLobby.currentTime = 0; this.bgmLobby.play().catch(() => {}); },
-      playQuiz() { this.stop(); this.bgmQuiz.currentTime = 0; this.bgmQuiz.play().catch(() => {}); },
+      playQuiz() {
+        // 로비나 승리 BGM만 정지하고, 퀴즈 BGM은 이미 재생 중이면 유지(끊김/재시작 방지)
+        this.bgmLobby.pause();
+        this.bgmWin.pause();
+        if (this.winTimer) clearTimeout(this.winTimer);
+        if (this.bgmQuiz.paused) {
+          this.bgmQuiz.play().catch(() => {});
+        }
+      },
       playWin() { this.stop(); this.bgmWin.currentTime = 0; this.bgmWin.play().catch(() => {}); },
       stop() {
         if (this.winTimer) clearTimeout(this.winTimer);
@@ -425,11 +479,26 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const quizData = [
-      { q: "대한민국의 수도는 어디일까요?", choices: ["부산광역시", "인천광역시", "서울특별시", "대구광역시"], ans: 2 },
-      { q: "웹 브라우저에서 동적으로 동작하는 표준 프로그래밍 언어는?", choices: ["Python", "JavaScript", "Java", "C++"], ans: 1 },
-      { q: "HTML의 올바른 약칭 풀이는 무엇일까요?", choices: ["HyperText Markup Language", "HighText Machine Language", "Hyperlink Text Mode Language", "Home Tool Markup Language"], ans: 0 }
-    ];
+    let quizData = [];
+    let isGameRunning = false; // 게임 진행 중 이탈 방지용 플래그
+    let countdownInterval = null; // 타이머 인터벌 변수
+    const QUESTION_TIME_LIMIT = 8; // 제한 시간 8초로 단축
+
+    // [이탈 방지 경고] 게임 진행 중 실수로 탭 닫기/새로고침 방지
+    window.addEventListener('beforeunload', (e) => {
+      if (isGameRunning) {
+        e.preventDefault();
+        e.returnValue = ''; // 표준 브라우저 이탈 경고 팝업 활성화
+      }
+    });
+
+    // quiz.json 비동기 로드
+    fetch('quiz.json')
+      .then(res => res.json())
+      .then(data => {
+        quizData = data;
+      })
+      .catch(err => console.error("퀴즈 데이터를 불러오지 못했습니다:", err));
 
     // 첫 클릭 시 로비 BGM 시작
     window.addEventListener('click', () => {
@@ -464,6 +533,11 @@
     });
 
     function startGame() {
+      if (!quizData || quizData.length === 0) {
+        alert("퀴즈 데이터를 아직 불러오는 중이거나 파일이 비어 있습니다.");
+        return;
+      }
+      isGameRunning = true; // 게임 시작 시 이탈 방지 활성화
       SoundManager.playSfx('menu');
       db.ref('gameSession').update({ state: 'question', currentQIndex: 0, reveal: false });
       loadAdminQuestion(0);
@@ -490,14 +564,69 @@
 
       document.getElementById('btn-next-step').disabled = false;
 
+      /// 문제 출제 시각, 제한 시간, 학생용 선택지를 DB에 전송
+      const qStartTime = Date.now();
+      db.ref('gameSession').update({
+        questionStartTime: qStartTime,
+        timeLimit: QUESTION_TIME_LIMIT,
+        totalQuestions: quizData.length,
+        currentQuestionData: {
+          q: q.q,
+          choices: q.choices
+        }
+      });
+
+      // 호스트 15초 타이머 시작
+      if (countdownInterval) clearInterval(countdownInterval);
+      const timerBadge = document.getElementById('admin-timer-badge');
+      const timerText = document.getElementById('admin-timer-text');
+      timerBadge.classList.remove('hidden');
+
+      let remaining = QUESTION_TIME_LIMIT;
+      timerText.innerText = `${remaining}s`;
+
+      const hostCard = document.querySelector('.m3-card');
+      document.body.classList.remove('time-warning');
+      hostCard.classList.remove('shake-warning');
+
+      countdownInterval = setInterval(() => {
+        remaining--;
+        timerText.innerText = `${remaining}s`;
+
+        // 3초 이하 시 붉은 배경 펄스 & 화면 진동
+        if (remaining <= 2 && remaining > 0) {
+          document.body.classList.add('time-warning');
+          hostCard.classList.add('shake-warning');
+        }
+
+        if (remaining <= 0) {
+          clearInterval(countdownInterval);
+          document.body.classList.remove('time-warning');
+          hostCard.classList.remove('shake-warning');
+          revealOrNext(); // 0초가 되면 자동으로 정답 공개 및 마감
+        }
+      }, 1000);
+
       // 이전 라운드 플레이어 응답값 초기화
       db.ref('gameSession/players').once('value', snap => {
         const players = snap.val() || {};
-        Object.keys(players).forEach(k => db.ref(`gameSession/players/${k}/lastAnswer`).set(null));
+        Object.keys(players).forEach(k => {
+          db.ref(`gameSession/players/${k}`).update({
+            lastAnswer: null,
+            submittedAt: null,
+            roundEarnedScore: 0
+          });
+        });
       });
     }
 
     function revealOrNext() {
+      // 타이머 즉시 정지, 뱃지 숨김 및 경고 효과 해제
+      if (countdownInterval) clearInterval(countdownInterval);
+      document.body.classList.remove('time-warning');
+      document.querySelector('.m3-card').classList.remove('shake-warning');
+      document.getElementById('admin-timer-badge').classList.add('hidden');
+
       db.ref('gameSession').once('value', snap => {
         const data = snap.val();
         if (!data) return;
@@ -514,8 +643,21 @@
             voteCounts[p.lastAnswer] = (voteCounts[p.lastAnswer] || 0) + 1;
           }
           if (p && p.lastAnswer === correctAns) {
-            const newScore = (p.score || 0) + 1000;
-            db.ref(`gameSession/players/${pid}/score`).set(newScore);
+            // [스피드 점수 계산] 15초 제한시간 기준: 0초에 누르면 1,000점 / 15초 경과 시 최소 500점 보장
+            const qStart = data.questionStartTime || (p.submittedAt ? p.submittedAt - 1000 : Date.now());
+            const submitTime = p.submittedAt || qStart;
+            const elapsedSeconds = Math.max(0, (submitTime - qStart) / 1000);
+            const timeLimit = QUESTION_TIME_LIMIT; // 15초 기준
+
+            // 500점(기본) + 남은 시간에 비례한 보너스(최대 500점)
+            const speedRatio = Math.max(0, (timeLimit - elapsedSeconds) / timeLimit);
+            const earnedScore = Math.round(500 + (500 * speedRatio));
+
+            const newScore = (p.score || 0) + earnedScore;
+            db.ref(`gameSession/players/${pid}`).update({
+              score: newScore,
+              roundEarnedScore: earnedScore // 이번 라운드 획득 점수 저장
+            });
             p.score = newScore;
           }
         });
@@ -545,7 +687,17 @@
       const nextBtn = document.getElementById('btn-admin-next-q');
       const title = document.getElementById('admin-rank-title');
 
-      const sorted = Object.values(players || {}).sort((a, b) => (b.score || 0) - (a.score || 0));
+      // 1. 공정한 정렬: 1순위 점수(높은순) -> 2순위 제출 속도(빠른순)
+      const sorted = Object.values(players || {})
+        .filter(p => p && typeof p === 'object' && p.name)
+        .sort((a, b) => {
+          const scoreDiff = (b.score || 0) - (a.score || 0);
+          if (scoreDiff !== 0) return scoreDiff;
+          // 동점인 경우: 더 일찍 제출한 사람 우선 (제출 기록 없으면 후순위)
+          const timeA = a.submittedAt || Infinity;
+          const timeB = b.submittedAt || Infinity;
+          return timeA - timeB;
+        });
 
       if (isLast) {
         title.innerText = "🏆 Final Podium";
@@ -553,7 +705,6 @@
         SoundManager.stop();
         SoundManager.playSfx('celebrate');
         if (typeof confetti === 'function') confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 } });
-
         SoundManager.winTimer = setTimeout(() => SoundManager.playWin(), 7500);
       } else {
         title.innerText = "Current Standings";
@@ -561,22 +712,64 @@
       }
 
       const podiumEl = document.getElementById('admin-podium');
-      podiumEl.innerHTML = '';
-      const [top1, top2, top3] = sorted;
-
-      if (top1) podiumEl.innerHTML += `<div class="podium-column first-place"><div class="podium-avatar">👑</div><div class="podium-name">${top1.name}</div><div class="podium-score">${top1.score || 0} pts</div><div class="podium-pillar">1</div></div>`;
-      if (top2) podiumEl.innerHTML += `<div class="podium-column second-place"><div class="podium-avatar">🥈</div><div class="podium-name">${top2.name}</div><div class="podium-score">${top2.score || 0} pts</div><div class="podium-pillar">2</div></div>`;
-      if (top3) podiumEl.innerHTML += `<div class="podium-column third-place"><div class="podium-avatar">🥉</div><div class="podium-name">${top3.name}</div><div class="podium-score">${top3.score || 0} pts</div><div class="podium-pillar">3</div></div>`;
-
-      const restPlayers = sorted.slice(3);
       const listEl = document.getElementById('admin-leaderboard');
+      podiumEl.innerHTML = '';
+      listEl.innerHTML = '';
+
+      // 참가자가 아예 없는 극단적인 예외 상황
+      if (sorted.length === 0) {
+        podiumEl.innerHTML = `<div class="body-medium" style="padding: 20px; color: var(--md-sys-color-outline);">참가자가 없습니다.</div>`;
+        return;
+      }
+
+      // 2. 포디엄 렌더링 (undefined 방어: 안전 접근 연산자 및 기본값 적용)
+      const top1 = sorted[0];
+      const top2 = sorted[1];
+      const top3 = sorted[2];
+
+      if (top1) {
+        podiumEl.innerHTML += `
+          <div class="podium-column first-place">
+            <div class="podium-avatar">👑</div>
+            <div class="podium-name">${top1.name || '무명'}</div>
+            <div class="podium-score">${(top1.score || 0).toLocaleString()} pts</div>
+            <div class="podium-pillar">1</div>
+          </div>
+        `;
+      }
+      if (top2) {
+        podiumEl.innerHTML += `
+          <div class="podium-column second-place">
+            <div class="podium-avatar">🥈</div>
+            <div class="podium-name">${top2.name || '무명'}</div>
+            <div class="podium-score">${(top2.score || 0).toLocaleString()} pts</div>
+            <div class="podium-pillar">2</div>
+          </div>
+        `;
+      }
+      if (top3) {
+        podiumEl.innerHTML += `
+          <div class="podium-column third-place">
+            <div class="podium-avatar">🥉</div>
+            <div class="podium-name">${top3.name || '무명'}</div>
+            <div class="podium-score">${(top3.score || 0).toLocaleString()} pts</div>
+            <div class="podium-pillar">3</div>
+          </div>
+        `;
+      }
+
+      // 3. 4위 이하 리스트 안전 출력
+      const restPlayers = sorted.slice(3);
       if (restPlayers.length === 0) {
-        listEl.innerHTML = `<div class="body-medium" style="text-align:center; padding: 10px; color:var(--md-sys-color-outline);">모든 순위가 포디엄에 표시되었습니다.</div>`;
+        listEl.innerHTML = `<div class="body-medium" style="text-align:center; padding: 12px; color:var(--md-sys-color-outline);">모든 참가자의 순위가 상단에 표시되었습니다.</div>`;
       } else {
         listEl.innerHTML = restPlayers.map((p, idx) => `
           <div class="leaderboard-row">
-            <div><span style="font-weight:700; width:28px; display:inline-block;">#${idx + 4}</span> <span>${p.name}</span></div>
-            <b>${p.score || 0} pts</b>
+            <div>
+              <span style="font-weight:700; width:28px; display:inline-block;">#${idx + 4}</span>
+              <span>${p.name || '무명'}</span>
+            </div>
+            <b>${(p.score || 0).toLocaleString()} pts</b>
           </div>
         `).join('');
       }
@@ -597,13 +790,20 @@
     }
 
     function resetGame() {
+      isGameRunning = false; // 리셋 시 경고창 없이 새로고침되도록 해제
+      if (countdownInterval) clearInterval(countdownInterval);
       SoundManager.stop();
+      SoundManager.bgmQuiz.currentTime = 0;
+      
+      // players를 완전히 null로 지워 찌꺼기 데이터가 남지 않도록 함
       db.ref('gameSession').set({
         state: 'lobby',
         currentQIndex: 0,
         reveal: false,
-        players: {}
-      }).then(() => location.reload());
+        players: null
+      }).then(() => {
+        location.reload();
+      });
     }
   </script>
 </body>
