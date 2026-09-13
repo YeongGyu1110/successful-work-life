@@ -348,8 +348,18 @@
       </span>
     </div>
 
+    <!-- 0. 게임 열기 (오디오 권한 획득 및 세션 오픈 화면) -->
+    <div id="admin-open-room" style="text-align: center; padding: 20px 0;">
+      <div style="font-size: 64px; margin-bottom: 16px;">🎯</div>
+      <h1 class="display-small" style="margin-bottom: 8px;">Quiz Host Room</h1>
+      <p class="body-medium" style="margin-bottom: 28px;">새로운 퀴즈 세션을 열고 참가자 대기를 시작합니다.</p>
+      <button class="m3-btn-filled" style="width: 100%;" onclick="openGameRoom()">
+        <span class="material-symbols-outlined">meeting_room</span> 게임 열기 & 대기실 오픈
+      </button>
+    </div>
+
     <!-- 1. 호스트 대기 로비 -->
-    <div id="admin-lobby">
+    <div id="admin-lobby" class="hidden">
       <h1 class="display-small" style="margin-bottom: 6px;">Quiz Room</h1>
       <p class="body-medium">플레이어들이 입장할 때까지 대기하세요.</p>
       
@@ -500,12 +510,22 @@
       })
       .catch(err => console.error("퀴즈 데이터를 불러오지 못했습니다:", err));
 
-    // 첫 클릭 시 로비 BGM 시작
-    window.addEventListener('click', () => {
-      db.ref('gameSession/state').once('value', snap => {
-        if (!snap.val() || snap.val() === 'lobby') SoundManager.playLobby();
+    // [게임 열기] 버튼 클릭 시 동작: 세션 초기화 + 대기 BGM 재생 + 로비 화면 전환
+    function openGameRoom() {
+      SoundManager.playSfx('menu');
+      SoundManager.playLobby();
+
+      // Firebase 세션을 초기화하고 대기(lobby) 상태로 전환
+      db.ref('gameSession').set({
+        state: 'lobby',
+        currentQIndex: 0,
+        reveal: false,
+        players: null
+      }).then(() => {
+        document.getElementById('admin-open-room').classList.add('hidden');
+        document.getElementById('admin-lobby').classList.remove('hidden');
       });
-    }, { once: true });
+    }
 
     db.ref('gameSession').on('value', snapshot => {
       const data = snapshot.val();
