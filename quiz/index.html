@@ -358,14 +358,24 @@
         const welcomeStatus = document.getElementById('welcome-status-text');
         const enterBtn = document.getElementById('btn-enter-session');
 
+        // [호스트 미오픈 상태 방어] DB가 비었거나 state가 closed(닫힘)인 경우
+        if (!data || !data.state || data.state === 'closed') {
+          myNickname = '';
+          hasAnsweredCurrentQ = false;
+          welcomeStatus.innerHTML = "진행자가 게임 세션을 준비 중입니다.<br>잠시만 기다려주세요.";
+          enterBtn.style.display = "none";
+          showScreen('student-welcome');
+          return;
+        }
+
         // 아직 닉네임 입력 전(대기 화면 단계)
         if (!myNickname) {
-          if (data && data.state === 'lobby') {
-            // 호스트가 게임을 열었을 때
+          if (data.state === 'lobby') {
+            // 호스트가 대기실을 열었을 때만 입장 버튼 노출
             welcomeStatus.innerHTML = "퀴즈 룸이 열렸습니다!<br>지금 바로 입장하세요.";
             enterBtn.style.display = "inline-flex";
           } else {
-            // 호스트가 아직 열지 않았거나 진행 중인 경우
+            // 호스트가 아직 열지 않았거나 이미 퀴즈 진행 중인 경우
             welcomeStatus.innerHTML = "진행자가 게임 세션을 준비 중입니다.<br>잠시만 기다려주세요.";
             enterBtn.style.display = "none";
             showScreen('student-welcome');
@@ -380,6 +390,8 @@
             myNickname = '';
             hasAnsweredCurrentQ = false;
             document.getElementById('player-nickname').value = '';
+            welcomeStatus.innerHTML = "퀴즈 룸이 열렸습니다!<br>지금 바로 입장하세요.";
+            enterBtn.style.display = "inline-flex";
             showScreen('student-welcome');
             return;
           }
@@ -453,7 +465,7 @@
           document.body.classList.remove('time-warning');
           document.querySelector('.m3-card').classList.remove('shake-warning');
           showScreen('student-result');
-          checkMyResult(); // 파라미터 불필요
+          checkMyResult();
         }
       });
     }
@@ -480,9 +492,8 @@
         lastAnswer: null
       });
 
-      // 참가 완료 후 대기 화면으로 진입 및 리스너 활성화
+      // 참가 완료 후 대기 화면으로 진입
       showScreen('student-wait');
-      initStudent();
     }
 
     function submitAnswer(choiceIndex) {
@@ -552,7 +563,7 @@
     }
 
     function showScreen(screenId) {
-      ['student-login', 'student-wait', 'student-quiz', 'student-result'].forEach(id => {
+      ['student-welcome', 'student-login', 'student-wait', 'student-quiz', 'student-result'].forEach(id => {
         document.getElementById(id).classList.add('hidden');
       });
       document.getElementById(screenId).classList.remove('hidden');
@@ -572,6 +583,9 @@
         db.ref(`gameSession/players/${myPlayerId}`).remove();
       }
     });
+
+    // 페이지 접속 즉시 세션 감지 시작
+    initStudent();
   </script>
 </body>
 </html>

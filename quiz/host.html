@@ -510,13 +510,22 @@
       })
       .catch(err => console.error("퀴즈 데이터를 불러오지 못했습니다:", err));
 
-    // [게임 열기] 버튼 클릭 시 동작: 세션 초기화 + 대기 BGM 재생 + 로비 화면 전환
+    // [호스트 접속 시 초기화] 호스트가 처음 켜졌을 때는 게임이 닫혀있는('closed') 상태로 세팅
+    db.ref('gameSession').set({
+      state: 'closed',
+      currentQIndex: 0,
+      reveal: false,
+      players: null
+    });
+
+    // [게임 열기] 버튼 클릭 시 비로소 'lobby' 상태로 오픈!
     function openGameRoom() {
+      isGameRunning = true; // 세션 오픈 즉시 이탈 방지 경고 활성화
       SoundManager.playSfx('menu');
       SoundManager.playLobby();
 
-      // Firebase 세션을 초기화하고 대기(lobby) 상태로 전환
-      db.ref('gameSession').set({
+      // Firebase 상태를 대기(lobby) 상태로 전환
+      db.ref('gameSession').update({
         state: 'lobby',
         currentQIndex: 0,
         reveal: false,
@@ -815,9 +824,9 @@
       SoundManager.stop();
       SoundManager.bgmQuiz.currentTime = 0;
       
-      // players를 완전히 null로 지워 찌꺼기 데이터가 남지 않도록 함
+      // 세션을 'closed'로 닫고 완전히 초기화
       db.ref('gameSession').set({
-        state: 'lobby',
+        state: 'closed',
         currentQIndex: 0,
         reveal: false,
         players: null
