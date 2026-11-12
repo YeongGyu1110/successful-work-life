@@ -253,36 +253,6 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
 .stat { font-size: 104px; font-weight: 700; line-height: 1; letter-spacing: -0.04em; color: var(--text-main); font-variant-numeric: tabular-nums; }
 .stat small { font-size: 36px; font-weight: 600; letter-spacing: -0.01em; margin-left: 6px; color: var(--text-muted); }
 
-/* 버튼 */
-.btn-primary {
-  height: 42px; padding: 0 16px;
-  border: none; border-radius: 3px;
-  background: var(--primary); color: #fff;
-  font-size: 16px; font-weight: 700;
-  display: inline-flex; align-items: center; gap: 10px;
-  cursor: pointer;
-  transition: background-color .15s;
-}
-.btn-primary:hover { background: var(--primary-dark); }
-.btn-primary:disabled { opacity: .4; cursor: default; }
-.text-btn {
-  height: 42px; padding: 0 12px;
-  border: none; border-radius: 3px;
-  background: transparent; color: var(--text-sub);
-  font-size: 16px; font-weight: 600;
-  display: inline-flex; align-items: center; gap: 8px;
-  cursor: pointer;
-  transition: background-color .15s, color .15s;
-}
-.text-btn:hover { background: var(--bg-hover); color: var(--text-main); }
-.text-btn:disabled { opacity: .35; cursor: default; background: transparent; }
-.kbd {
-  font-size: 12px; font-weight: 600; letter-spacing: 0;
-  padding: 1px 6px; border-radius: 2px;
-  background: rgba(255, 255, 255, .2);
-}
-.text-btn .kbd { background: var(--bg-subtle); color: var(--text-muted); }
-
 /* ============ 표지 ============ */
 .slide.cover { padding: 64px 80px 56px; }
 .cover .doc-meta { margin-bottom: 0; }
@@ -316,108 +286,6 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
 .toc span:first-child { color: var(--text-main); }
 .toc span + span::before { content: "/"; color: var(--rule-strong); margin: 0 12px; }
 
-/* ============ 면접 유형 뽑기 ============ */
-.pick-list {
-  list-style: none;
-  display: grid; grid-template-columns: 1fr 1fr; grid-auto-flow: column; grid-template-rows: repeat(5, auto);
-  gap: 4px 12px;
-}
-.pick-row {
-  display: flex; gap: 12px; align-items: baseline;
-  padding: 12px 14px; border-radius: 2px;
-  transition: background-color .1s, color .1s;
-}
-.pick-row .num { width: 24px; flex: none; }
-.pick-row .nm { font-size: 19px; font-weight: 700; color: var(--text-main); line-height: 1.5; }
-.pick-row.hl { background: var(--primary-light); }
-.pick-row.hl .nm, .pick-row.hl .num { color: var(--primary); }
-.pick-row.final { background: var(--primary); }
-.pick-row.final .nm, .pick-row.final .num { color: #fff; }
-.pick-name { font-size: 48px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.25; color: var(--text-main); }
-.pop { animation: rise .55s var(--ease-out) both; }
-
-/* ============ AI 면접 체험 ============ */
-.ai-q { font-size: 30px; font-weight: 700; line-height: 1.45; letter-spacing: -0.02em; color: var(--text-main); min-height: 87px; }
-.ai-q.idle { color: var(--text-muted); font-weight: 600; }
-.ai-clock { display: flex; align-items: baseline; gap: 24px; margin-top: 18px; }
-.ai-time {
-  font-size: 92px; font-weight: 700; line-height: 1; letter-spacing: -0.04em;
-  color: var(--text-main); font-variant-numeric: tabular-nums;
-  transition: color .3s;
-}
-.ai-time.dim { color: var(--rule-strong); }
-.ai-time.warn { color: var(--review); }
-.ai-time.over { color: var(--danger); }
-.ai-phase { font-size: 18px; font-weight: 600; color: var(--text-muted); }
-.ai-phase.live::before {
-  content: ''; display: inline-block; width: 9px; height: 9px; border-radius: 50%;
-  background: var(--danger); margin-right: 10px; vertical-align: 1px;
-  animation: blink 1s steps(2, start) infinite;
-}
-.ai-track { position: relative; height: 6px; background: var(--bg-subtle); border-radius: 1px; margin: 26px 0 40px; }
-.ai-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--primary); border-radius: 1px; transition: background-color .3s; }
-.ai-fill.warn { background: var(--review-bar); }
-.ai-fill.over { background: var(--danger); }
-.ai-mark { position: absolute; top: -5px; bottom: -5px; width: 1px; background: var(--rule-strong); }
-.ai-mark span { position: absolute; top: 20px; left: 0; transform: translateX(-50%); font-size: 13px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
-.ai-mark.end span { transform: translateX(-100%); }
-
-.cam {
-  position: relative; width: 380px; height: 285px;
-  background: var(--bg-subtle); border-radius: 2px; overflow: hidden;
-  display: grid; place-items: center;
-}
-.cam video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); opacity: 0; transition: opacity .4s; }
-.cam.on video { opacity: 1; }
-.cam .corner { position: absolute; width: 24px; height: 24px; border: 0 solid var(--primary); z-index: 2; }
-.cam .c1 { top: 14px; left: 14px; border-top-width: 2px; border-left-width: 2px; }
-.cam .c2 { top: 14px; right: 14px; border-top-width: 2px; border-right-width: 2px; }
-.cam .c3 { bottom: 14px; left: 14px; border-bottom-width: 2px; border-left-width: 2px; }
-.cam .c4 { bottom: 14px; right: 14px; border-bottom-width: 2px; border-right-width: 2px; }
-.cam .scan {
-  position: absolute; left: 0; right: 0; height: 2px; top: 10%; z-index: 2;
-  background: linear-gradient(90deg, transparent, var(--primary), transparent);
-  opacity: 0;
-}
-.cam.on .scan { opacity: .9; animation: scan 2.6s ease-in-out infinite alternate; }
-@keyframes scan { from { top: 8%; } to { top: 92%; } }
-.cam .readout {
-  position: absolute; left: 14px; bottom: 12px; z-index: 2;
-  font-size: 13px; font-weight: 700; color: #fff;
-  background: rgba(20, 23, 26, .55); padding: 3px 8px; border-radius: 2px;
-  opacity: 0;
-}
-.cam.on .readout { opacity: 1; }
-.cam .readout::before { content: '● '; color: #ff6b6b; }
-.cam-empty { font-size: 15px; font-weight: 600; color: var(--text-muted); text-align: center; z-index: 1; }
-.cam.on .cam-empty { display: none; }
-
-/* ============ 반응 속도 실험 ============ */
-.react-area {
-  flex: 1; height: 340px;
-  background: var(--bg-subtle); border-radius: 2px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
-  cursor: pointer; user-select: none;
-  transition: background-color .06s;
-}
-.react-area .big { font-size: 64px; font-weight: 700; letter-spacing: -0.035em; color: var(--text-main); font-variant-numeric: tabular-nums; line-height: 1.15; }
-.react-area .hint { font-size: 18px; font-weight: 600; color: var(--text-muted); }
-.react-area.wait { background: var(--bg-hover); }
-.react-area.go { background: var(--primary); }
-.react-area.go .big, .react-area.go .hint { color: #fff; }
-.react-area.early { background: var(--review-light); }
-.react-area.early .big { color: var(--review); }
-.rt-list { list-style: none; }
-.rt-row { display: grid; grid-template-columns: 44px 1fr 70px; gap: 12px; align-items: center; padding: 9px 0; }
-.rt-row + .rt-row { border-top: 1px solid var(--rule); }
-.rt-row .n { font-size: 15px; font-weight: 600; color: var(--text-muted); }
-.rt-row .v { font-size: 17px; font-weight: 700; color: var(--text-main); text-align: right; font-variant-numeric: tabular-nums; }
-.rt-bar { position: relative; height: 6px; background: var(--bg-subtle); border-radius: 1px; }
-.rt-bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--primary); border-radius: 1px; animation: grow .5s var(--ease-out) both; transform-origin: left; }
-.rt-bar i.slow { background: var(--review-bar); }
-.rt-bar::after { content: ''; position: absolute; left: 50%; top: -5px; bottom: -5px; width: 1px; background: var(--text-main); }
-@keyframes grow { from { transform: scaleX(0); } }
-
 /* ============ 첫인상 수치 ============ */
 .imp-row { display: grid; grid-template-columns: 240px 250px minmax(0, 1fr); gap: 28px; align-items: center; padding: 16px 0; }
 .imp-row + .imp-row { border-top: 1px solid var(--rule); }
@@ -433,29 +301,6 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
 .meh-table tr.flash td { animation: flash 1.8s ease-out; }
 @keyframes flash { from { background: var(--fc); } to { background: transparent; } }
 
-/* ============ 체크리스트 ============ */
-.check-row {
-  display: grid; grid-template-columns: 40px minmax(0, 1fr) auto;
-  gap: 14px; align-items: center;
-  padding: 7px 0;
-}
-.check-row + .check-row { border-top: 1px solid var(--rule); }
-.check-row .q { font-size: 18px; line-height: 1.55; }
-.check-row .q b { color: var(--text-main); font-weight: 700; margin-right: 8px; }
-.seg { display: inline-flex; gap: 2px; }
-.seg button {
-  height: 32px; padding: 0 12px; min-width: 64px;
-  border: none; border-radius: 2px;
-  background: transparent; color: var(--text-muted);
-  font-size: 15px; font-weight: 500;
-  cursor: pointer;
-  transition: background-color .15s, color .15s;
-}
-.seg button:hover { background: var(--bg-subtle); color: var(--text-main); }
-.seg button[data-v="yes"][aria-pressed="true"] { background: var(--primary-light); color: var(--primary); font-weight: 700; }
-.seg button[data-v="no"][aria-pressed="true"] { background: var(--review-light); color: var(--review); font-weight: 700; }
-#score { display: inline-block; }
-#score.bump { animation: pop .35s var(--ease-out); }
 </style>
 </head>
 <body>
@@ -467,7 +312,7 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
 <section class="slide cover" data-title="표지">
   <div class="doc-meta">
     <span class="brand"><i class="brand-dot live"></i>Ⅲ. 취업과 창업</span>
-    <span class="page">교과서 112–122쪽</span>
+    <span class="page">교과서 112–121쪽</span>
   </div>
   <div class="cover-main">
     <div class="label green">03</div>
@@ -475,8 +320,8 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
     <p class="cover-sub" data-type data-delay="1000">면접은 어떻게 준비하고, 나를 어떻게 보여 줄 수 있을까?</p>
   </div>
   <dl class="cover-info">
-    <dt>범위</dt><dd>03. 면접과 이미지 메이킹 (112–121쪽) · 04. 창업 절차와 실제 도입 (122쪽)</dd>
-    <dt>순서</dt><dd>면접 준비 전략 → 이미지 메이킹 → 창업 미리 보기 → 정리</dd>
+    <dt>범위</dt><dd>03. 면접과 이미지 메이킹 (112–121쪽)</dd>
+    <dt>순서</dt><dd>면접 준비 전략 → 이미지 메이킹 → 정리</dd>
   </dl>
 </section>
 
@@ -512,7 +357,7 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
     <p>면접에서 첫인상을 좋게 하려면 면접 전 <strong>철저한 준비</strong>와 <strong>충분한 연습</strong>을 해야 한다.</p>
     <p>이제 면접관 앞에 있는 나를 상상하며 면접 준비 전략을 세워 보자.</p>
     <div class="callout" style="margin-top:auto">
-      <div class="label">짝과 이야기해 보기</div>
+      <div class="label">생각해 보기</div>
       <div class="title" style="font-size:32px">면접 상황에서 가장 중요한 것은 무엇일까?</div>
     </div>
   </div>
@@ -531,7 +376,7 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
       <div class="label">Think!</div>
       <div class="title">면접 준비는 어떻게 해야 할까?</div>
     </div>
-    <div class="toc"><span>다양한 면접 유형</span><span>면접 전략</span><span>면접 후기</span><span>AI 면접 체험</span><span>취업 성공 사례</span><span>모의 면접</span></div>
+    <div class="toc"><span>다양한 면접 유형</span><span>면접 전략</span><span>면접 후기</span><span>취업 성공 사례</span><span>모의 면접</span></div>
   </div>
 </section>
 
@@ -577,31 +422,7 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
   </div>
 </section>
 
-<!-- 7. 면접 유형 뽑기 -->
-<section class="slide" data-title="면접 유형 뽑기" data-hook="pick">
-  <header class="doc-header">
-    <div class="doc-meta">
-      <span class="crumbs">1 면접 준비 전략<i class="sep">/</i><span class="here">면접 유형 뽑기</span></span>
-      <span class="page">113쪽</span>
-    </div>
-    <h1>오늘의 면접은?</h1>
-  </header>
-  <div class="content" style="flex-direction:row; gap:40px">
-    <div style="width:600px; flex:none">
-      <ol class="pick-list" id="pick-list"></ol>
-    </div>
-    <div style="flex:1; display:flex; flex-direction:column; gap:12px; padding-left:40px; border-left:1px solid var(--rule)">
-      <span class="label">뽑힌 면접 유형</span>
-      <div id="pick-out" style="display:flex; flex-direction:column; gap:12px">
-        <div class="pick-name muted" style="color:var(--rule-strong)">?</div>
-        <p class="small muted">버튼을 누르면 10가지 면접 유형 중 하나를 뽑아요. 뽑힌 유형으로 짧게 역할극을 해 봐요.</p>
-      </div>
-      <div style="margin-top:auto"><button class="btn-primary" id="pick-btn">뽑기 <span class="kbd">Enter</span></button></div>
-    </div>
-  </div>
-</section>
-
-<!-- 8. 면접 전략 -->
+<!-- 7. 면접 전략 -->
 <section class="slide" data-title="면접 전략">
   <header class="doc-header">
     <div class="doc-meta">
@@ -657,7 +478,7 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
   </div>
 </section>
 
-<!-- 9. 면접 후기 -->
+<!-- 8. 면접 후기 -->
 <section class="slide" data-title="국내 기업 면접 후기">
   <header class="doc-header">
     <div class="doc-meta">
@@ -690,57 +511,12 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
           <li>“회사 일 때문에 친구와의 중요한 약속을 취소해야 한다면?” 같은 상황 질문</li>
           <li>전략 게임 10가지, 사진 속 표정을 보고 감정 키워드 고르기</li>
         </ul>
-        <p class="small" style="margin-top:auto; color:var(--primary); font-weight:600">다음 장에서 AI 면접을 직접 체험해 봐요 →</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 10. AI 면접 체험 -->
-<section class="slide" data-title="AI 면접 체험" data-hook="ai">
-  <header class="doc-header">
-    <div class="doc-meta">
-      <span class="crumbs">생각을 더하는 읽기<i class="sep">/</i><span class="here">AI 면접 체험</span></span>
-      <span class="page">114쪽</span>
-    </div>
-    <h1>AI 면접 체험</h1>
-  </header>
-  <div class="content" style="flex-direction:row; gap:44px">
-    <div style="flex:1; min-width:0; display:flex; flex-direction:column">
-      <span class="label" id="ai-qno">지원자 한 명 나와 주세요</span>
-      <div class="ai-q idle" id="ai-q" style="margin-top:8px">Enter를 누르면 첫 질문이 나와요.</div>
-      <div class="ai-clock">
-        <span class="ai-time dim" id="ai-time">00:00</span>
-        <span class="ai-phase" id="ai-phase">대기 중</span>
-      </div>
-      <div class="ai-track">
-        <div class="ai-fill" id="ai-fill"></div>
-        <div class="ai-mark" style="left:11.11%"><span>20초</span></div>
-        <div class="ai-mark" style="left:83.33%"><span>2분 30초</span></div>
-        <div class="ai-mark end" style="left:100%"><span>3분</span></div>
-      </div>
-      <div style="display:flex; gap:8px; margin-top:auto">
-        <button class="btn-primary" id="ai-main"><span id="ai-main-label">시작</span> <span class="kbd">Enter</span></button>
-        <button class="text-btn" id="ai-retry" disabled>다시 답변</button>
-      </div>
-    </div>
-    <div style="width:380px; flex:none; display:flex; flex-direction:column; gap:10px">
-      <div class="cam" id="cam">
-        <video id="cam-video" playsinline muted></video>
-        <i class="corner c1"></i><i class="corner c2"></i><i class="corner c3"></i><i class="corner c4"></i>
-        <i class="scan"></i>
-        <span class="readout" id="cam-readout">표정 분석 중</span>
-        <span class="cam-empty" id="cam-empty">카메라 꺼짐</span>
-      </div>
-      <div style="display:flex; align-items:center; justify-content:space-between">
-        <button class="text-btn" id="cam-btn" style="margin-left:-12px">카메라 켜기</button>
-        <span class="label" style="font-size:13px">※ 실제 분석은 하지 않는 연출 화면</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- 11. 취업 성공 사례 -->
+<!-- 9. 취업 성공 사례 -->
 <section class="slide" data-title="취업 성공 사례">
   <header class="doc-header">
     <div class="doc-meta">
@@ -777,7 +553,7 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
   </div>
 </section>
 
-<!-- 12. 탐구: 모의 면접 -->
+<!-- 10. 탐구: 모의 면접 -->
 <section class="slide" data-title="탐구: 모의 면접 탐색하기">
   <header class="doc-header">
     <div class="doc-meta">
@@ -811,7 +587,7 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
   </div>
 </section>
 
-<!-- 13. 단원: 이미지 메이킹 -->
+<!-- 11. 단원: 이미지 메이킹 -->
 <section class="slide section" data-title="2. 이미지 메이킹">
   <div class="doc-meta">
     <span class="crumbs"><i class="brand-dot live"></i>03. 면접과 이미지 메이킹</span>
@@ -828,7 +604,7 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
   </div>
 </section>
 
-<!-- 14. 이미지와 이미지 메이킹 -->
+<!-- 12. 이미지와 이미지 메이킹 -->
 <section class="slide" data-title="이미지 메이킹의 의미">
   <header class="doc-header">
     <div class="doc-meta">
@@ -860,7 +636,7 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
   </div>
 </section>
 
-<!-- 15. 첫인상 -->
+<!-- 13. 첫인상 -->
 <section class="slide" data-title="첫인상의 힘" data-hook="impression">
   <header class="doc-header">
     <div class="doc-meta">
@@ -894,38 +670,7 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
   </div>
 </section>
 
-<!-- 16. 0.3초 반응 속도 실험 -->
-<section class="slide" data-title="0.3초 실험" data-hook="react">
-  <header class="doc-header">
-    <div class="doc-meta">
-      <span class="crumbs">2 이미지 메이킹<i class="sep">/</i><span class="here">0.3초 실험</span></span>
-      <span class="page">118쪽</span>
-    </div>
-    <h1>0.3초는 얼마나 짧을까?</h1>
-  </header>
-  <div class="content">
-    <p class="lead small" style="font-size:18px">화면이 <strong style="color:var(--primary)">초록색</strong>으로 바뀌는 순간 클릭하세요. 내가 반응하는 시간과 첫인상이 정해지는 시간(300ms)을 비교해 봐요.</p>
-    <div style="display:flex; gap:40px; flex:1; min-height:0">
-      <div class="react-area" id="react-area">
-        <span class="big" id="react-big">준비</span>
-        <span class="hint" id="react-hint">클릭하거나 Enter를 누르면 시작</span>
-      </div>
-      <div style="width:300px; flex:none; display:flex; flex-direction:column">
-        <div style="display:flex; justify-content:space-between; align-items:baseline; padding-bottom:10px; border-bottom:1.5px solid var(--text-main)">
-          <span class="label">기록</span>
-          <span class="label" style="font-size:13px">가운데 선 = 0.3초</span>
-        </div>
-        <ol class="rt-list" id="rt-list"><li class="rt-row"><span class="n">—</span><span class="small muted">아직 기록이 없어요</span><span></span></li></ol>
-        <div style="margin-top:auto; padding-top:12px; border-top:1px solid var(--rule-strong); display:flex; justify-content:space-between; align-items:baseline">
-          <span class="label">평균</span>
-          <span id="rt-avg" style="font-size:28px; font-weight:700; color:var(--text-main); font-variant-numeric:tabular-nums">—</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- 17. 메라비언의 법칙 -->
+<!-- 14. 메라비언의 법칙 -->
 <section class="slide" data-title="메라비언의 법칙" data-hook="meh">
   <header class="doc-header">
     <div class="doc-meta">
@@ -962,7 +707,7 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
   </div>
 </section>
 
-<!-- 18. 내면적 vs 외면적 이미지 -->
+<!-- 15. 내면적 vs 외면적 이미지 -->
 <section class="slide" data-title="내면적·외면적 이미지">
   <header class="doc-header" style="margin-bottom:20px">
     <div class="doc-meta">
@@ -999,7 +744,7 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
   </div>
 </section>
 
-<!-- 19. 이미지 메이킹 5단계 -->
+<!-- 16. 이미지 메이킹 5단계 -->
 <section class="slide" data-title="이미지 메이킹 5단계">
   <header class="doc-header">
     <div class="doc-meta">
@@ -1020,7 +765,7 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
   </div>
 </section>
 
-<!-- 20. 면접 이미지 메이킹 전략 -->
+<!-- 17. 면접 이미지 메이킹 전략 -->
 <section class="slide" data-title="면접 이미지 메이킹 전략">
   <header class="doc-header" style="margin-bottom:22px">
     <div class="doc-meta">
@@ -1066,7 +811,7 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
   </div>
 </section>
 
-<!-- 21. 탐구: 이미지 메이킹 전략 만들기 -->
+<!-- 18. 탐구: 이미지 메이킹 전략 만들기 -->
 <section class="slide" data-title="탐구: 이미지 메이킹 전략 만들기">
   <header class="doc-header">
     <div class="doc-meta">
@@ -1088,7 +833,7 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
         <div class="row-grid" style="grid-template-columns:90px 340px minmax(0,1fr)">
           <span class="tag green" style="justify-self:start">활동 2</span>
           <span class="row-title">1분 모의 면접</span>
-          <span class="row-desc">1분 모의 면접을 진행하고 체크리스트 8개 항목에 표시하기<span class="muted">다음 장에서 바로 해 보기 →</span></span>
+          <span class="row-desc">1분 모의 면접을 진행하고 체크리스트 8개 항목에 표시하기</span>
         </div>
       </li>
       <li>
@@ -1102,83 +847,12 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
   </div>
 </section>
 
-<!-- 22. 체크리스트 -->
-<section class="slide" data-title="면접 이미지 메이킹 체크리스트" data-hook="check">
-  <header class="doc-header" style="margin-bottom:14px; padding-bottom:16px">
-    <div class="doc-meta">
-      <span class="crumbs">활동 2<i class="sep">/</i><span class="here">1분 모의 면접</span></span>
-      <span class="page">121쪽</span>
-    </div>
-    <h1>면접 이미지 메이킹 체크리스트</h1>
-  </header>
-  <div class="content" style="flex-direction:row; gap:40px">
-    <div id="checklist" style="flex:1">
-      <div class="check-row"><span class="num">01</span><span class="q"><b>인사</b>면접 시작 전 목과 허리를 45°로 굽혀 바르게 인사를 했는가?</span><span class="seg"></span></div>
-      <div class="check-row"><span class="num">02</span><span class="q"><b>표정</b>직무에 맞는 밝은 표정을 짓고 있는가?</span><span class="seg"></span></div>
-      <div class="check-row"><span class="num">03</span><span class="q"><b>자세</b>가슴, 어깨, 허리를 펴고 바르게 앉아 있었는가?</span><span class="seg"></span></div>
-      <div class="check-row"><span class="num">04</span><span class="q"><b>시선 처리</b>면접관의 시선을 잘 응시하였는가?</span><span class="seg"></span></div>
-      <div class="check-row"><span class="num">05</span><span class="q"><b>복장</b>면접 복장이 깨끗하게 세탁되고 잘 다려져 있는가?</span><span class="seg"></span></div>
-      <div class="check-row"><span class="num">06</span><span class="q"><b>헤어</b>헤어 스타일이 단정한가?</span><span class="seg"></span></div>
-      <div class="check-row"><span class="num">07</span><span class="q"><b>메이크업</b>피부색과 자연스럽게 어울리는가?</span><span class="seg"></span></div>
-      <div class="check-row"><span class="num">08</span><span class="q"><b>목소리</b>답변할 때 말끝을 명확하게 하였는가?</span><span class="seg"></span></div>
-    </div>
-    <div style="width:200px; flex:none; display:flex; flex-direction:column; gap:8px; padding-left:24px; border-left:1px solid var(--rule)">
-      <span class="label">‘예’ 개수</span>
-      <div class="stat" style="font-size:72px"><span id="score">0</span><small>/ 8</small></div>
-      <p class="small muted" id="score-msg" style="min-height:80px">항목을 눌러 표시해 보세요.</p>
-      <button class="text-btn" id="reset" style="align-self:flex-start; margin-left:-12px">초기화</button>
-    </div>
-  </div>
-</section>
-
-<!-- 23. 단원: 창업 절차와 실제 -->
-<section class="slide section" data-title="04. 창업 절차와 실제">
-  <div class="doc-meta">
-    <span class="crumbs"><i class="brand-dot live"></i>다음 단원 미리 보기</span>
-    <span class="page">122쪽</span>
-  </div>
-  <div class="section-main">
-    <div class="section-no">04</div>
-    <h1 data-split>창업 절차와 실제</h1>
-    <ul class="list" style="margin-bottom:36px">
-      <li>창업의 의미를 알고 창업 조건과 절차에 대하여 설명할 수 있다.</li>
-      <li>창업의 성공과 실패 사례를 조사하여 원인을 분석하고 발표할 수 있다.</li>
-    </ul>
-    <div class="callout">
-      <div class="label">생각 열기</div>
-      <div class="title">창업을 하려면 무엇을 알아야 할까?</div>
-    </div>
-  </div>
-</section>
-
-<!-- 24. 창업 전에 알아야 할 6가지 -->
-<section class="slide" data-title="창업 전에 알아야 할 것">
-  <header class="doc-header">
-    <div class="doc-meta">
-      <span class="crumbs">04. 창업 절차와 실제<i class="sep">/</i><span class="here">생각 열기</span></span>
-      <span class="page">122쪽</span>
-    </div>
-    <h1>창업 전에 꼭 알아야 할 6가지</h1>
-  </header>
-  <div class="content">
-    <p class="lead small" style="font-size:18px">창업은 많은 사람이 꿈꾸지만, 실제로 성공한 사람은 많지 않다. 성공 창업에는 <strong>면밀한 계획</strong>이 필요하다.</p>
-    <div class="cols" style="grid-template-columns:repeat(3,1fr); gap:28px 36px">
-      <div class="col-block"><span class="label">01</span><h3>창업 목적</h3><p class="small">창업하는 목적이 분명하고 뚜렷해야 한다.</p></div>
-      <div class="col-block"><span class="label">02</span><h3>평생 직장 준비</h3><p class="small">짧은 기간에 큰돈을 벌겠다는 생각으로 창업하면 실패하기 쉽다.</p></div>
-      <div class="col-block"><span class="label">03</span><h3>창의적인 아이템</h3><p class="small">경쟁력 있는 아이템이 있어야 성공할 수 있다.</p></div>
-      <div class="col-block"><span class="label">04</span><h3>직접 눈으로 확인</h3><p class="small">직접 발로 뛰며 모든 사항을 점검하고 눈으로 확인해야 한다.</p></div>
-      <div class="col-block"><span class="label">05</span><h3>기본적인 회계 지식</h3><p class="small">회계를 모르면 이익이 났는지 손실이 났는지 알 수 없다.</p></div>
-      <div class="col-block"><span class="label">06</span><h3>확실한 매출 전략</h3><p class="small">막연한 계획보다 구체적이고 확실한 매출 전략이 있어야 한다.</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- 25. 정리 -->
+<!-- 19. 정리 -->
 <section class="slide" data-title="정리">
   <header class="doc-header">
     <div class="doc-meta">
       <span class="crumbs">03. 면접과 이미지 메이킹<i class="sep">/</i><span class="here">정리</span></span>
-      <span class="page">112–122쪽</span>
+      <span class="page">112–121쪽</span>
     </div>
     <h1>핵심 정리</h1>
   </header>
@@ -1225,7 +899,7 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
   });
 
   /* ---------- 진입 애니메이션 대상 정하기 ---------- */
-  const RISE = '.content > *, .rows > li, .cols > *, .v-split > *, table.doc tr, .cover-main > *, .section-main > *, .toc > span, .check-row, .imp-row';
+  const RISE = '.content > *, .rows > li, .cols > *, .v-split > *, table.doc tr, .cover-main > *, .section-main > *, .toc > span, .imp-row';
   slides.forEach((s) => {
     const all = [...s.querySelectorAll(RISE)].filter((el) =>
       !el.closest('[data-build]') && !el.classList.contains('late') && !el.matches('[data-split]')
@@ -1330,21 +1004,11 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
   }
 
   /* ---------- 키보드 · 터치 ---------- */
-  // 슬라이드 안 버튼을 누른 뒤에도 스페이스/엔터가 버튼이 아니라 발표 조작으로 가도록 포커스를 뺀다
-  document.addEventListener('click', (e) => {
-    const b = e.target.closest('button');
-    if (b) setTimeout(() => b.blur(), 0);
-  });
   document.addEventListener('keydown', (e) => {
     if (e.altKey || e.ctrlKey || e.metaKey) return;
     switch (e.key) {
       case 'ArrowRight': case ' ': e.preventDefault(); next(); break;
       case 'ArrowLeft': e.preventDefault(); prev(); break;
-      case 'Enter': {
-        const h = hooks[slides[cur].dataset.hook];
-        if (h?.action) { e.preventDefault(); h.action(); }
-        break;
-      }
       case 'Home': go(0); break;
       case 'End': go(slides.length - 1); break;
     }
@@ -1363,189 +1027,6 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
      ===================================================================== */
   const hooks = {};
 
-  /* ---------- 면접 유형 뽑기 ---------- */
-  {
-    const TYPES = [
-      ['단독 면접', '지원자 1명과 면접관 1명이 개별적으로 질의응답한다.', '역할극: 면접관 1명 · 지원자 1명'],
-      ['개인 면접', '지원자 1명에게 다수의 면접관이 질문한다.', '역할극: 면접관 3명 · 지원자 1명'],
-      ['그룹 면접', '다수의 면접관이 다수의 면접자에게 질의응답한다.', '역할극: 면접관 2명 · 지원자 3명, 같은 질문에 차례로 답하기'],
-      ['집단 토론 면접', '주제를 주고 토론하는 과정을 평가한다.', '역할극: 지원자 4명이 “교복 자율화” 토론, 면접관은 관찰'],
-      ['다차원 면접', '함께 활동하며 어울리는 과정에서 평가한다.', '역할극: 짧은 게임을 함께하며 협동하는 모습 보여 주기'],
-      ['블라인드 면접', '학력·전공을 모른 채 직무 관련 경험만 본다.', '역할극: 학교·성적 언급 없이 경험만으로 자기소개'],
-      ['세일즈 면접', '상품 하나를 골라 판매력을 평가한다.', '역할극: 교실 물건 하나를 1분 안에 면접관에게 팔아 보기'],
-      ['비대면 면접', '온라인으로 얼굴을 보며 대화한다.', '역할극: 등을 돌리고 화면 너머라고 가정해 대답하기'],
-      ['프레젠테이션 면접', '주제를 받고 정해진 시간 안에 발표한다.', '역할극: “내가 뽑은 우리 반 최고의 장점” 1분 발표'],
-      ['AI(인공 지능) 면접', 'AI·빅 데이터로 성향, 영상, 게임을 평가한다.', '역할극: AI 면접 체험 슬라이드에서 직접 해 보기'],
-    ];
-    const list = document.getElementById('pick-list');
-    const out = document.getElementById('pick-out');
-    const btn = document.getElementById('pick-btn');
-    list.innerHTML = TYPES.map(([n], i) => `<li class="pick-row"><span class="num">${String(i + 1).padStart(2, '0')}</span><span class="nm">${n}</span></li>`).join('');
-    const rows = [...list.children];
-    let spinning = false, last = -1, spinTimers = [];
-
-    function spin() {
-      if (spinning) return;
-      spinning = true; btn.disabled = true;
-      rows.forEach((r) => r.classList.remove('hl', 'final'));
-      const L = TYPES.length;
-      let target;
-      do { target = Math.floor(Math.random() * L); } while (target === last);
-      const base = last;
-      last = target;
-      const total = L * 2 + (((target - base) % L) + L) % L;
-      let t = 0;
-      for (let k = 1; k <= total; k++) {
-        const p = k / total;
-        t += 40 + Math.pow(p, 3) * 380;
-        const idx = (((base + k) % L) + L) % L;
-        spinTimers.push(setTimeout(() => {
-          rows.forEach((r) => r.classList.remove('hl'));
-          rows[idx].classList.add(k === total ? 'final' : 'hl');
-          if (k === total) reveal(idx);
-        }, t));
-      }
-    }
-    function reveal(i) {
-      const [n, d, r] = TYPES[i];
-      out.innerHTML = `<div class="pick-name pop">${n}</div><p class="pop" style="animation-delay:.08s">${d}</p><p class="small pop" style="animation-delay:.16s; color:var(--primary); font-weight:600">${r}</p>`;
-      spinning = false; btn.disabled = false;
-      btn.firstChild.textContent = '다시 뽑기 ';
-    }
-    btn.addEventListener('click', spin);
-    hooks.pick = {
-      action: spin,
-      leave() { spinTimers.forEach(clearTimeout); spinTimers = []; spinning = false; btn.disabled = false; },
-    };
-  }
-
-  /* ---------- AI 면접 체험 ---------- */
-  {
-    const QUESTIONS = [
-      '1분 동안 자기소개를 해 주세요.',
-      '자신의 성격의 장단점은 무엇인가요?',
-      '우리 회사에 지원한 동기는 무엇인가요?',
-      '회사의 급한 일로 지방 출장을 가게 되어 친구와 오래전에 잡은 중요한 약속을 취소해야 한다면, 어떻게 하겠습니까?',
-      '신입은 가장 기본적이고 반복적인 일을 할지도 모르는데, 괜찮나요?',
-      '인생에서 가장 미쳐서 했던 일이 있나요?',
-      '마지막으로 하고 싶은 말이 있나요?',
-    ];
-    const $ = (id) => document.getElementById(id);
-    const qno = $('ai-qno'), q = $('ai-q'), time = $('ai-time'), phase = $('ai-phase'), fill = $('ai-fill');
-    const mainBtn = $('ai-main'), mainLabel = $('ai-main-label'), retryBtn = $('ai-retry');
-    const cam = $('cam'), video = $('cam-video'), camBtn = $('cam-btn'), camEmpty = $('cam-empty'), readout = $('cam-readout');
-    const THINK = 3, RETRY = 20, WARN = 150, LIMIT = 180;
-    let state = 'idle', qi = -1, t0 = 0, raf = 0, elapsed = 0;
-
-    const mmss = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
-    const human = (s) => { s = Math.round(s); const m = Math.floor(s / 60); return m ? `${m}분 ${s % 60}초` : `${s}초`; };
-
-    function setClass(el, cls) { el.classList.remove('dim', 'warn', 'over'); if (cls) el.classList.add(cls); }
-
-    function showQuestion() {
-      qno.textContent = `질문 ${qi + 1} / ${QUESTIONS.length}`;
-      q.classList.remove('idle', 'pop');
-      q.textContent = QUESTIONS[qi];
-      void q.offsetWidth; q.classList.add('pop');
-    }
-    function think() {
-      state = 'think'; t0 = performance.now();
-      showQuestion();
-      mainLabel.textContent = '바로 답변';
-      retryBtn.disabled = true;
-      phase.classList.remove('live');
-      fill.style.width = '0%'; setClass(fill, null);
-      loop();
-    }
-    function answer() {
-      state = 'answer'; t0 = performance.now();
-      mainLabel.textContent = '답변 완료';
-      phase.classList.add('live');
-      loop();
-    }
-    function finish() {
-      state = 'done';
-      clearInterval(raf);
-      phase.classList.remove('live');
-      retryBtn.disabled = true;
-      phase.textContent = elapsed <= LIMIT ? `답변 시간 ${human(elapsed)} · 3분 이내 ✓` : `답변 시간 ${human(elapsed)} · 3분 초과`;
-      mainLabel.textContent = qi + 1 < QUESTIONS.length ? '다음 질문' : '처음부터';
-    }
-    function loop() {
-      clearInterval(raf);
-      const frame = () => {
-        const t = (performance.now() - t0) / 1000;
-        if (state === 'think') {
-          const rem = THINK - t;
-          if (rem <= 0) { answer(); return; }
-          time.textContent = `00:0${Math.ceil(rem)}`;
-          setClass(time, 'dim');
-          phase.textContent = '생각할 시간 · 2~3초 여유를 두고 답해요';
-        } else if (state === 'answer') {
-          elapsed = t;
-          time.textContent = mmss(t);
-          const cls = t >= LIMIT ? 'over' : t >= WARN ? 'warn' : null;
-          setClass(time, cls); setClass(fill, cls);
-          fill.style.width = `${Math.min(t / LIMIT, 1) * 100}%`;
-          retryBtn.disabled = t >= RETRY;
-          phase.textContent = t < RETRY ? `답변 중 · ${Math.ceil(RETRY - t)}초 안에는 다시 답변할 수 있어요`
-            : t < WARN ? '답변 중 · 결론부터 간결하게'
-            : t < LIMIT ? '답변 중 · 곧 3분이에요' : '3분 초과 · 결론만 말하고 마무리!';
-        }
-      };
-      frame();
-      raf = setInterval(frame, 50);
-    }
-    function primary() {
-      if (state === 'idle') { qi = 0; think(); }
-      else if (state === 'think') answer();
-      else if (state === 'answer') finish();
-      else if (state === 'done') { qi = (qi + 1) % QUESTIONS.length; think(); }
-    }
-    function retry() { if (state === 'answer' && elapsed < RETRY) think(); }
-    function reset() {
-      clearInterval(raf);
-      state = 'idle'; qi = -1; elapsed = 0;
-      qno.textContent = '지원자 한 명 나와 주세요';
-      q.textContent = 'Enter를 누르면 첫 질문이 나와요.'; q.classList.add('idle'); q.classList.remove('pop');
-      time.textContent = '00:00'; setClass(time, 'dim');
-      phase.textContent = '대기 중'; phase.classList.remove('live');
-      fill.style.width = '0%'; setClass(fill, null);
-      mainLabel.textContent = '시작'; retryBtn.disabled = true;
-    }
-
-    /* 카메라: 켜면 화면에 비추기만 하고 아무 데도 보내지 않는다 */
-    let stream = null, readTimer = 0;
-    const READS = ['표정 분석 중', '시선 처리 확인 중', '목소리 톤 측정 중', '자세 인식 중', '답변 키워드 추출 중'];
-    async function camOn() {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false });
-        video.srcObject = stream;
-        await video.play();
-        cam.classList.add('on');
-        camBtn.textContent = '카메라 끄기';
-        let r = 0;
-        readTimer = setInterval(() => { readout.textContent = READS[++r % READS.length]; }, 1400);
-      } catch (err) {
-        camEmpty.textContent = '카메라를 켤 수 없어요';
-        stream = null;
-      }
-    }
-    function camOff() {
-      clearInterval(readTimer);
-      if (stream) stream.getTracks().forEach((t) => t.stop());
-      stream = null; video.srcObject = null;
-      cam.classList.remove('on');
-      camBtn.textContent = '카메라 켜기';
-      camEmpty.textContent = '카메라 꺼짐';
-    }
-    mainBtn.addEventListener('click', primary);
-    retryBtn.addEventListener('click', retry);
-    camBtn.addEventListener('click', () => (stream ? camOff() : camOn()));
-    reset();
-    hooks.ai = { action: primary, leave() { reset(); camOff(); } };
-  }
-
   /* ---------- 첫인상: 0.3초 vs 40시간 막대 ---------- */
   {
     const a = document.getElementById('imp-a');
@@ -1557,45 +1038,6 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
         later(() => { a.style.transition = 'width .3s linear'; a.style.width = '2px'; }, 500);
         later(() => { b.style.transition = 'width 2.6s cubic-bezier(.3,.1,.3,1)'; b.style.width = '100%'; }, 1100);
       },
-    };
-  }
-
-  /* ---------- 0.3초 반응 속도 실험 ---------- */
-  {
-    const area = document.getElementById('react-area');
-    const big = document.getElementById('react-big');
-    const hint = document.getElementById('react-hint');
-    const list = document.getElementById('rt-list');
-    const avg = document.getElementById('rt-avg');
-    let st = 'idle', goTimer = 0, t0 = 0, recs = [];
-
-    function set(state, text, sub) { st = state; area.className = 'react-area ' + state; big.textContent = text; hint.textContent = sub; }
-    function start() {
-      set('wait', '기다리세요…', '초록색이 되면 바로 클릭!');
-      goTimer = setTimeout(() => {
-        set('go', '지금!', '');
-        requestAnimationFrame(() => { t0 = performance.now(); });
-      }, 1500 + Math.random() * 2500);
-    }
-    function render() {
-      list.innerHTML = recs.map((r, i) => `<li class="rt-row"><span class="n">${recs.length - i}회</span><span class="rt-bar"><i class="${r > 300 ? 'slow' : ''}" style="width:${Math.min(r / 600, 1) * 100}%"></i></span><span class="v">${r}ms</span></li>`).join('');
-      avg.textContent = `${Math.round(recs.reduce((s, r) => s + r, 0) / recs.length)}ms`;
-    }
-    function hit() {
-      if (st === 'wait') { clearTimeout(goTimer); set('early', '너무 빨라요!', '초록색이 된 다음에 눌러야 해요 · 다시 하려면 클릭'); return; }
-      if (st === 'go') {
-        const rt = Math.max(1, Math.round(performance.now() - t0));
-        recs.unshift(rt); recs = recs.slice(0, 5);
-        render();
-        set('result', `${rt}ms`, rt <= 300 ? `첫인상(300ms)보다 ${300 - rt}ms 빨랐어요 · 다시 하려면 클릭` : `첫인상(300ms)보다 ${rt - 300}ms 느렸어요 · 다시 하려면 클릭`);
-        return;
-      }
-      start();
-    }
-    area.addEventListener('pointerdown', hit);
-    hooks.react = {
-      action: hit,
-      leave() { clearTimeout(goTimer); set('idle', '준비', '클릭하거나 Enter를 누르면 시작'); },
     };
   }
 
@@ -1620,45 +1062,6 @@ table.doc ul.list li { font-size: 17px; line-height: 1.6; margin-bottom: 2px; }
     trs.forEach((tr, i) => {
       tr.addEventListener('mouseenter', () => { svg.classList.add('dim'); segs[i].classList.add('on'); });
       tr.addEventListener('mouseleave', () => { svg.classList.remove('dim'); segs[i].classList.remove('on'); });
-    });
-  }
-
-  /* ---------- 체크리스트 ---------- */
-  {
-    const scoreEl = document.getElementById('score');
-    const msgEl = document.getElementById('score-msg');
-    document.querySelectorAll('#checklist .seg').forEach((seg) => {
-      [['yes', '예'], ['no', '아니오']].forEach(([v, label]) => {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.dataset.v = v;
-        b.setAttribute('aria-pressed', 'false');
-        b.textContent = label;
-        b.addEventListener('click', () => {
-          const on = b.getAttribute('aria-pressed') === 'true';
-          seg.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', 'false'));
-          if (!on) b.setAttribute('aria-pressed', 'true');
-          updateScore();
-        });
-        seg.appendChild(b);
-      });
-    });
-    function updateScore() {
-      const yes = document.querySelectorAll('#checklist button[data-v="yes"][aria-pressed="true"]').length;
-      const answered = document.querySelectorAll('#checklist button[aria-pressed="true"]').length;
-      if (scoreEl.textContent !== String(yes)) {
-        scoreEl.textContent = yes;
-        scoreEl.classList.remove('bump'); void scoreEl.offsetWidth; scoreEl.classList.add('bump');
-      }
-      if (answered === 0) msgEl.textContent = '항목을 눌러 표시해 보세요.';
-      else if (answered < 8) msgEl.textContent = `${8 - answered}개 항목이 남았어요.`;
-      else if (yes === 8) msgEl.textContent = '완벽해요! 이대로 면접장에 가도 좋아요.';
-      else if (yes >= 6) msgEl.textContent = '좋아요! ‘아니오’ 항목만 보완해 봐요.';
-      else msgEl.textContent = '‘아니오’ 항목을 중심으로 다시 연습해 봐요.';
-    }
-    document.getElementById('reset').addEventListener('click', () => {
-      document.querySelectorAll('#checklist button').forEach((x) => x.setAttribute('aria-pressed', 'false'));
-      updateScore();
     });
   }
 
