@@ -40,6 +40,7 @@
     '.acc > *', '.form-row', '.who > *', '.prin > *', '.facts > *', '.eq > *', '.kinds > *',
     '.work > *', '.crit > *', '.cards > *', '.steps > *', '.sum > *', '.tl > li', '.qa', '.profile',
     '.hein-list', '.hein > div', '.cov > *', '.sec-left > *', '.sec-sign', '.sec-toc > li',
+    '.fields6 > *', '.acc8 > *', '.laws2 > *', '.work8 > *', '.vid > *',
   ].join(', ');
 
   /* ---------- 왼쪽 기둥: 장 번호와 진행 막대 ---------- */
@@ -226,6 +227,37 @@
       const el = document.getElementById(id);
       el.style.left = x + 'px';
       el.style.top = y + 'px';
+    });
+  }
+
+  /* ---------- 영상: 이 장에 있을 때만 불러오고, 떠나면 멈춘다 ----------
+     (저사양 노트북에서 다른 장을 넘길 때 영상이 뒤에서 돌지 않게) */
+  {
+    const frame = document.getElementById('vid-frame');
+    const id = frame && frame.dataset.yt;
+    let iframe = null;
+    hooks.video = {
+      enter() {
+        if (!id || iframe) return;
+        iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube.com/embed/${id}?rel=0&playsinline=1`;
+        iframe.title = '영상';
+        iframe.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+        iframe.allowFullscreen = true;
+        iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+        frame.appendChild(iframe);
+      },
+      leave() {
+        if (iframe) { iframe.remove(); iframe = null; }
+      },
+    };
+    // 영상을 클릭하면 키보드가 영상 안으로 들어가서 ←/→가 발표 조작에 안 먹는다.
+    // 클릭(재생·정지)은 그대로 두고, 곧바로 키보드만 발표 화면으로 되돌린다.
+    window.addEventListener('blur', () => {
+      setTimeout(() => {
+        const a = document.activeElement;
+        if (a && a.tagName === 'IFRAME') { a.blur(); window.focus(); }
+      }, 0);
     });
   }
 
