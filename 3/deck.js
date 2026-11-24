@@ -1,6 +1,7 @@
 /* =====================================================================
    3차 발표 · 슬라이드 엔진
    조작: → / 스페이스 = 다음 항목·다음 장, ← = 이전, Home / End
+   터치: 화면을 탭 = 다음, 왼쪽 30%를 탭 = 이전, 좌우로 밀기 = 다음 / 이전
    ===================================================================== */
 (() => {
   const root = document.documentElement;
@@ -147,7 +148,7 @@
     go(cur - 1);
   }
 
-  /* ---------- 키보드 · 터치 ---------- */
+  /* ---------- 키보드 ---------- */
   document.addEventListener('keydown', (e) => {
     if (e.altKey || e.ctrlKey || e.metaKey) return;
     switch (e.key) {
@@ -157,14 +158,50 @@
       case 'End': go(slides.length - 1); break;
     }
   });
-  let tx = null, ty = null;
-  viewport.addEventListener('touchstart', (e) => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, { passive: true });
-  viewport.addEventListener('touchend', (e) => {
-    if (tx === null) return;
-    const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
-    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) (dx < 0 ? next : prev)();
-    tx = ty = null;
-  });
+
+  /* ---------- 터치 (아이패드 · 휴대폰) ----------
+     장 전환 중에는 전환 레이어가 화면을 덮어 터치가 #viewport에 닿지 않는다.
+     빠르게 넘겨도 놓치지 않도록 document에서 듣는다. */
+  {
+    const TAP_MOVE = 12, TAP_MS = 500, SWIPE = 50, PREV_ZONE = 0.3;
+    const vv = window.visualViewport;
+    // 눈에 보이는 화면 기준 좌표. 확대한 채 밀면 화면이 손가락을 따라와 clientX는 그대로이기 때문
+    const at = (t) => vv
+      ? { x: (t.clientX - vv.offsetLeft) * vv.scale, y: (t.clientY - vv.offsetTop) * vv.scale, w: vv.width * vv.scale }
+      : { x: t.clientX, y: t.clientY, w: window.innerWidth };
+    let touch = null; // 한 손가락 터치의 시작점
+    if (matchMedia('(pointer: coarse)').matches) root.classList.add('touch');
+
+    document.addEventListener('touchstart', (e) => {
+      root.classList.add('touch');
+      // 두 손가락(확대)이 닿으면 모두 뗄 때까지 넘기지 않는다
+      if (e.touches.length > 1) { touch = null; return; }
+      touch = { ...at(e.touches[0]), t: e.timeStamp };
+    }, { passive: true });
+    document.addEventListener('touchcancel', () => { touch = null; });
+    document.addEventListener('touchend', (e) => {
+      if (!touch) return;
+      const { x, y, t } = touch;
+      const end = at(e.changedTouches[0]);
+      const dx = end.x - x, dy = end.y - y;
+      touch = null;
+
+      let move = null;
+      if (Math.hypot(dx, dy) <= TAP_MOVE) {
+        // 탭: 링크는 그대로 두고, 길게 누르기는 무시한다
+        if (e.timeStamp - t > TAP_MS || e.target.closest('a, button')) return;
+        move = end.x / end.w < PREV_ZONE ? prev : next;
+      } else if (Math.abs(dx) > SWIPE && Math.abs(dx) > Math.abs(dy)) {
+        // 확대한 상태에서 미는 것은 화면을 옮겨 보는 동작이다
+        if (vv && vv.scale > 1.05) return;
+        move = dx < 0 ? next : prev;
+      }
+      if (!move) return;
+      // 뒤따라오는 클릭이 새로 나온 장의 링크나 영상을 누르지 않게 막는다
+      if (e.cancelable) e.preventDefault();
+      move();
+    }, { passive: false });
+  }
 
   /* =====================================================================
      슬라이드별 동작

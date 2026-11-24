@@ -46,6 +46,11 @@ body {
   letter-spacing: -0.01em;
 }
 
+/* 터치 기기: 연속 탭이 확대로, 밀기가 뒤로 가기·새로 고침으로 먹히지 않게 (두 손가락 확대는 됨) */
+html { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+html, body { overscroll-behavior: none; }
+html.touch body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+
 /* ============ 무대 ============ */
 #viewport { position: fixed; inset: 0; overflow: hidden; background: #0d0e0f; }
 #stage {
@@ -548,3 +553,16 @@ ul.dash li::before { content: ''; position: absolute; left: 0; top: .74em; width
 .vid-foot { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; }
 .vid-out { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--line-2); }
 .vid-out:hover { color: var(--warn); border-color: var(--warn); }
+
+/* 영상 위의 터치는 유튜브가 가져가므로, 터치 기기에서는 양옆에 넘기는 자리를 둔다
+   (16:9 영상은 원래 양옆이 검게 남아서 영상 크기는 그대로다) */
+.vid-nav { display: none; }
+html.touch .vid-frame { margin: 0 56px; }
+html.touch .vid-nav {
+  position: absolute; top: 22px; bottom: 22px; width: 120px;
+  display: grid; place-items: center;
+  font-family: var(--mono); font-size: 72px; font-weight: 500; line-height: 1; color: var(--muted);
+  pointer-events: none;
+}
+.vid-nav.prev { left: 0; }
+.vid-nav.next { right: 0; }
